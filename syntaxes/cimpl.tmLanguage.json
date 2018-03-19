@@ -59,6 +59,21 @@
 					},
 					"end": "$",
 					"name": "comment.line.double-slash.cimpl"
+				},
+				{
+					"name": "comment.block.cimpl",
+					"begin": "/\\*",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.comment.cimpl"
+						}
+					},
+					"end": "\\*/",
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.definition.comment.cimpl"
+						}
+					}
 				}
 			]
 		},

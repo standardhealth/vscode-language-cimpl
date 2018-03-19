@@ -20,6 +20,11 @@ None at the moment
 
 ## Release Notes
 
+### 0.1.0 - 2018-03-19
+
+Added support for block-level comments in CIMPL
+
 ### 0.0.1
 
 Initial release of vscode-language-cimpl
+

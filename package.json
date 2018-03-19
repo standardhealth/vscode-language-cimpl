@@ -1,39 +1,39 @@
 {
-  "name": "vscode-language-cimpl",
-  "displayName": "vscode-language-cimpl",
-  "description": "VSCode CIMPL Language Support",
-  "version": "0.0.1",
-  "publisher": "okeefm",
-  "engines": {
-    "vscode": "^1.20.0"
-  },
-  "categories": [
-    "Languages"
-  ],
-  "contributes": {
-    "languages": [
-      {
-        "id": "cimpl",
-        "aliases": [
-          "CIMPL",
-          "cimpl"
-        ],
-        "extensions": [
-          ".txt",
-          ".cimpl"
-        ],
-        "configuration": "./language-configuration.json"
-      }
+    "name": "vscode-language-cimpl",
+    "displayName": "vscode-language-cimpl",
+    "description": "VSCode CIMPL Language Support",
+    "version": "0.1.1",
+    "publisher": "okeefm",
+    "engines": {
+        "vscode": "^1.20.0"
+    },
+    "categories": [
+        "Languages"
     ],
-    "grammars": [
-      {
-        "language": "cimpl",
-        "scopeName": "source.cimpl",
-        "path": "./syntaxes/cimpl.tmLanguage.json"
-      }
-    ]
-  },
-  "devDependencies": {
-    "vsce": "^1.37.5"
-  }
+    "contributes": {
+        "languages": [
+            {
+                "id": "cimpl",
+                "aliases": [
+                    "CIMPL",
+                    "cimpl"
+                ],
+                "extensions": [
+                    ".txt",
+                    ".cimpl"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "cimpl",
+                "scopeName": "source.cimpl",
+                "path": "./syntaxes/cimpl.tmLanguage.json"
+            }
+        ]
+    },
+    "devDependencies": {
+        "vsce": "^1.37.5"
+    }
 }

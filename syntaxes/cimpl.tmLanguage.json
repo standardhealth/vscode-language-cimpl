@@ -13,6 +13,9 @@
 		},
 		{
 			"include": "#constants"
+		},
+		{
+			"include": "#concepts"
 		}
 	],
 	"repository": {
@@ -20,7 +23,7 @@
 			"patterns": [
 				{
 					"name": "keyword.control.cimpl",
-					"match": "\\b(Grammar|DataElement|Namespace|Uses|Path|CodeSystem|Element|EntryElement|Based on|Value|Concept|Description)\\b:"
+					"match": "\\b(Grammar|DataElement|Namespace|Uses|Path|CodeSystem|Element|EntryElement|Based on|Value|Concept|Description|ValueSet)\\b:"
 				},
 				{
 					"name": "keyword.reserved.cimpl",
@@ -99,6 +102,15 @@
 				{
 					"match": "\\b(\\*)\\b",
 					"name": "constant.numeric.wildcard.cimpl"
+				}
+			]
+		},
+		"concepts": {
+			"name": "concepts.cimpl",
+			"patterns": [
+				{
+					"name": "variable.concept.cimpl",
+					"match": "(\\S*)#(\\S+)\\b"
 				}
 			]
 		},

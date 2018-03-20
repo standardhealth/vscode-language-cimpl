@@ -20,11 +20,17 @@ None at the moment
 
 ## Release Notes
 
+### 0.1.2 - 2018-03-20
+
+- Added documentation of changes to README/Changelog
+- Added 'ValueSet' to syntax highlighting
+- Added concepts to highlighting
+
 ### 0.1.0 - 2018-03-19
 
-Added support for block-level comments in CIMPL
+- Added support for block-level comments in CIMPL
 
 ### 0.0.1
 
-Initial release of vscode-language-cimpl
+- Initial release of vscode-language-cimpl
 

@@ -3,6 +3,12 @@ All notable changes to the "vscode-language-cimpl" extension will be documented 
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 0.1.0 - 2018-03-20
+
+- Added documentation of changes to README/Changelog
+- Added 'ValueSet' to syntax highlighting
+- Added concepts to syntax highlighting
+
 ## 0.1.0 - 2018-03-19
 - Added support for block-level comments in CIMPL
 

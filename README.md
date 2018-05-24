@@ -20,6 +20,10 @@ None at the moment
 
 ## Release Notes
 
+### 0.1.3 - 2018-05-24
+
+- Added `Target` to the list of keywords
+
 ### 0.1.2 - 2018-03-20
 
 - Added documentation of changes to README/Changelog

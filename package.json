@@ -2,7 +2,7 @@
     "name": "vscode-language-cimpl",
     "displayName": "vscode-language-cimpl",
     "description": "VSCode CIMPL Language Support",
-    "version": "0.1.2",
+    "version": "0.1.3",
     "repository": "https://gitlab.mitre.org/mokeefe/vscode-language-cimpl",
     "publisher": "okeefm",
     "engines": {

@@ -23,7 +23,7 @@
 			"patterns": [
 				{
 					"name": "keyword.control.cimpl",
-					"match": "\\b(Grammar|DataElement|Namespace|Uses|Path|CodeSystem|Element|EntryElement|Based on|Value|Concept|Description|ValueSet)\\b:"
+					"match": "\\b(Grammar|DataElement|Namespace|Uses|Path|CodeSystem|Element|EntryElement|Based on|Value|Concept|Description|ValueSet|Target)\\b:"
 				},
 				{
 					"name": "keyword.reserved.cimpl",

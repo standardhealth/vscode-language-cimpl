@@ -1,5 +1,6 @@
 {
     "name": "vscode-language-cimpl-client",
+    "publisher": "Standard Health Record",
     "version": "0.1.4",
     "repository": {
         "type": "git",
@@ -77,6 +78,9 @@
         "vsce": "^1.37.5"
     },
     "scripts": {
+        "vscode:prepublish": "tsc -p ./",
+        "compile": "tsc -p ./",
+        "watch": "tsc -w -p ./",
         "update-vscode": "node ./node_modules/vscode/bin/install",
         "postinstall": "node ./node_modules/vscode/bin/install"
     }

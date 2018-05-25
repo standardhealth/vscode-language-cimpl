@@ -11,9 +11,15 @@
 	},
 	"scripts": {
 		"postinstall": "cd server && npm install && cd ../client && npm install && cd ..",
-		"compile": "npm run installServer"
+		"compile": "tsc -p client/tsconfig.json && cd server && npm run installServer && cd .. && tsc -p server/tsconfig.json",
+		"compile:client": "tsc -p client/tsconfig.json",
+		"watch:client": "tsc -w -p client/tsconfig.json",
+		"compile:server": "cd server && npm run installServer && cd .. && tsc -p server/tsconfig.json",
+		"watch:server": "cd server && npm run installServer && cd .. && tsc -w -p server/tsconfig.json"
 	},
 	"devDependencies": {
-		"mocha": "^2.2.48"
+		"@types/mocha": "^2.2.48",
+		"@types/node": "^6.0.101",
+		"typescript": "^2.7.2"
 	}
 }

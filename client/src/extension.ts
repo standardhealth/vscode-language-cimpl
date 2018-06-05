@@ -1,129 +1,53 @@
+/* --------------------------------------------------------------------------------------------
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
+ * ------------------------------------------------------------------------------------------ */
+'use strict';
+
 import * as path from 'path';
-import {
-  workspace as Workspace, window as Window, ExtensionContext, TextDocument, OutputChannel, WorkspaceFolder, Uri
-} from 'vscode';
+
+import { workspace, ExtensionContext } from 'vscode';
 
 import {
-  LanguageClient, LanguageClientOptions, TransportKind
+	LanguageClient, LanguageClientOptions, ServerOptions, TransportKind
 } from 'vscode-languageclient';
 
-let defaultClient: LanguageClient;
-let clients: Map<string, LanguageClient> = new Map();
-
-let _sortedWorkspaceFolders: string[];
-function sortedWorkspaceFolders(): string[] {
-  if (_sortedWorkspaceFolders === void 0) {
-    _sortedWorkspaceFolders = Workspace.workspaceFolders.map(folder => {
-      let result = folder.uri.toString();
-      if (result.charAt(result.length - 1) !== '/') {
-        result = result + '/';
-      }
-      return result;
-    }).sort(
-      (a, b) => {
-        return a.length - b.length;
-      }
-    );
-  }
-  return _sortedWorkspaceFolders;
-}
-Workspace.onDidChangeWorkspaceFolders(() => _sortedWorkspaceFolders = undefined);
-
-function getOuterMostWorkspaceFolder(folder: WorkspaceFolder): WorkspaceFolder {
-  let sorted = sortedWorkspaceFolders();
-  for (let element of sorted) {
-    let uri = folder.uri.toString();
-    if (uri.charAt(uri.length - 1) !== '/') {
-      uri = uri + '/';
-    }
-    if (uri.startsWith(element)) {
-      return Workspace.getWorkspaceFolder(Uri.parse(element));
-    }
-  }
-  return folder;
-}
+let client: LanguageClient;
 
 export function activate(context: ExtensionContext) {
-  let module = context.asAbsolutePath(path.join('server', 'server.js'));
-  let outputChannel: OutputChannel = Window.createOutputChannel('vscode-language-cimpl-server');
 
-  function didOpenTextDocument(document: TextDocument) {
-    // We only care about CIMPL files
-    if (document.languageId !== 'cimpl') {
-      return;
-    }
+	// The server is implemented in node
+	let serverModule = context.asAbsolutePath(path.join('server', 'out', 'server.js'));
+	// The debug options for the server
+	let debugOptions = { execArgv: ["--nolazy", "--inspect=6009"] };
 
-    let uri = document.uri;
-    // Untitled files go to a default client.
-    if (uri.scheme === 'untitled' && !defaultClient) {
-      let debugOptions = { execArgv: ["--nolazy", "--inspect=6010"] };
-      let serverOptions = {
-        run: { module, transport: TransportKind.ipc },
-        debug: { module, transport: TransportKind.ipc, options: debugOptions }
-      };
-      let clientOptions: LanguageClientOptions = {
-        documentSelector: [
-          { scheme: 'untitled', language: 'plaintext' }
-        ],
-        diagnosticCollectionName: 'multi-lsp',
-        outputChannel: outputChannel
-      }
-      defaultClient = new LanguageClient('vscode-language-cimpl-server', 'VS Code Language CIMPL Server', serverOptions, clientOptions);
-      defaultClient.registerProposedFeatures();
-      defaultClient.start();
-      return;
-    }
+	// If the extension is launched in debug mode then the debug server options are used
+	// Otherwise the run options are used
+	let serverOptions: ServerOptions = {
+		run : { module: serverModule, transport: TransportKind.ipc },
+		debug: { module: serverModule, transport: TransportKind.ipc, options: debugOptions }
+	}
 
-    let folder = Workspace.getWorkspaceFolder(uri);
-    // Files outside a folder can't be handled. This might depend on the language.
-    // Single file languages like JSON might handle files outside the workspace folders.
-    if (!folder) {
-      return;
-    }
-    // If we have nested workspace folders we only start a server on the outer most workspace folder.
-    folder = getOuterMostWorkspaceFolder(folder);
+	// Options to control the language client
+	let clientOptions: LanguageClientOptions = {
+		// Register the server for plain text documents
+		documentSelector: [{scheme: 'file', language: 'plaintext'}],
+		synchronize: {
+			// Notify the server about file changes to '.clientrc files contain in the workspace
+			fileEvents: workspace.createFileSystemWatcher('**/.clientrc'),
+		}
+	}
 
-    if (!clients.has(folder.uri.toString())) {
-      let debugOptions = { execArgv: ["--nolazy", `--inspect=${6011 + clients.size}`] };
-      let serverOptions = {
-        run: { module, transport: TransportKind.ipc },
-        debug: { module, transport: TransportKind.ipc, options: debugOptions }
-      };
-      let clientOptions: LanguageClientOptions = {
-        documentSelector: [
-          { scheme: 'file', language: 'plaintext', pattern: `${folder.uri.fsPath}/**/*` }
-        ],
-        diagnosticCollectionName: 'vscode-language-cimpl-server',
-        workspaceFolder: folder,
-        outputChannel: outputChannel
-      }
-      let client = new LanguageClient('vscode-language-cimpl-server', 'VS Code Language CIMPL Server', serverOptions, clientOptions);
-      client.registerProposedFeatures();
-      client.start();
-      clients.set(folder.uri.toString(), client);
-    }
-  }
+	// Create the language client and start the client.
+	client = new LanguageClient('languageServerExample', 'Language Server Example', serverOptions, clientOptions);
 
-  Workspace.onDidOpenTextDocument(didOpenTextDocument);
-  Workspace.textDocuments.forEach(didOpenTextDocument);
-  Workspace.onDidChangeWorkspaceFolders((event) => {
-    for (let folder of event.removed) {
-      let client = clients.get(folder.uri.toString());
-      if (client) {
-        clients.delete(folder.uri.toString());
-        client.stop();
-      }
-    }
-  });
+	// Start the client. This will also launch the server
+	client.start();
 }
 
 export function deactivate(): Thenable<void> {
-  let promises: Thenable<void>[] = [];
-  if (defaultClient) {
-    promises.push(defaultClient.stop());
-  }
-  for (let client of clients.values()) {
-    promises.push(client.stop());
-  }
-  return Promise.all(promises).then(() => undefined);
+	if (!client) {
+		return undefined;
+	}
+	return client.stop();
 }

@@ -9,17 +9,77 @@
 		"type": "git",
 		"url": "https://github.com/standardhealth/vscode-language-cimpl"
 	},
+	"keywords": [
+		"multi-root ready"
+	],
+	"engines": {
+		"vscode": "^1.23.0"
+	},
+	"activationEvents": [
+		"onLanguage:plaintext"
+	],
+	"main": "./client/out/extension",
+	"categories": [
+		"Programming Languages"
+	],
+	"contributes": {
+		"configuration": {
+			"type": "object",
+			"title": "Example configuration",
+			"properties": {
+				"languageServerExample.maxNumberOfProblems": {
+					"scope": "resource",
+					"type": "number",
+					"default": 100,
+					"description": "Controls the maximum number of problems produced by the server."
+				},
+				"languageServerExample.trace.server": {
+					"scope": "window",
+					"type": "string",
+					"enum": [
+						"off",
+						"messages",
+						"verbose"
+					],
+					"default": "off",
+					"description": "Traces the communication between VSCode and the language server."
+				}
+			}
+		},
+		"languages": [
+			{
+				"id": "cimpl",
+				"aliases": [
+					"CIMPL",
+					"cimpl"
+				],
+				"extensions": [
+					".txt",
+					".cimpl"
+				],
+				"configuration": "./language-configuration.json"
+			}
+		],
+		"grammars": [
+			{
+				"language": "cimpl",
+				"scopeName": "source.cimpl",
+				"path": "./syntaxes/cimpl.tmLanguage.json"
+			}
+		]
+	},
 	"scripts": {
-		"postinstall": "cd server && npm install && cd ../client && npm install && cd ..",
-		"compile": "tsc -p client/tsconfig.json && cd server && npm run installServer && cd .. && tsc -p server/tsconfig.json",
-		"compile:client": "tsc -p client/tsconfig.json",
-		"watch:client": "tsc -w -p client/tsconfig.json",
-		"compile:server": "cd server && npm run installServer && cd .. && tsc -p server/tsconfig.json",
-		"watch:server": "cd server && npm run installServer && cd .. && tsc -w -p server/tsconfig.json"
+		"vscode:prepublish": "cd client && npm run update-vscode && cd .. && npm run compile",
+		"compile:client": "tsc -p ./client/tsconfig.json",
+		"compile:server": "tsc -p ./server/tsconfig.json",
+		"watch:client": "tsc -w -p ./client/tsconfig.json",
+		"watch:server": "tsc -w -p ./server/tsconfig.json",
+		"compile": "npm run compile:client && npm run compile:server",
+		"postinstall": "cd client && npm install && cd ../server && npm install && cd .."
 	},
 	"devDependencies": {
-		"@types/mocha": "^2.2.48",
-		"@types/node": "^6.0.101",
-		"typescript": "^2.7.2"
+		"@types/mocha": "^5.2.0",
+		"@types/node": "^8.0.0",
+		"typescript": "2.8.3"
 	}
 }

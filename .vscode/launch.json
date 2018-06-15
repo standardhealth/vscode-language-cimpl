@@ -12,7 +12,7 @@
 			"sourceMaps": true,
 			"outFiles": ["${workspaceRoot}/client/out/**/*.js"],
 			"preLaunchTask": "npm: watch:client",
-			"trace": "verbose"
+			"trace": true
 		},
 		{
 			"type": "node",
@@ -23,7 +23,7 @@
 			"port": 6009,
 			"sourceMaps": true,
 			"outFiles": ["${workspaceRoot}/server/out/**/*.js"],
-			"trace": "verbose"
+			"trace": true
 		}
 	]
 }

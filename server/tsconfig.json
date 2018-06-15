@@ -7,10 +7,15 @@
 		"sourceMap": true,
 		"outDir": "out",
 		"rootDir": "src",
-		"lib": [ "es6" ]
+		"lib": [ "es6" ],
+		"allowJs": true,
+		"typeRoots": [
+			"./src/types",
+			"node_modules/@types"
+		]
 	},
 	"include": [
-		"src"
+		"src/**/*"
 	],
 	"exclude": [
 		"node_modules"

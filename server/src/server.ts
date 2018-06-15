@@ -10,6 +10,8 @@ import {
 	CompletionItemKind, TextDocumentPositionParams
 } from 'vscode-languageserver';
 
+import { importFromFilePath } from './parser';
+
 // Create a connection for the server. The connection uses Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
 let connection = createConnection(ProposedFeatures.all);
@@ -17,6 +19,8 @@ let connection = createConnection(ProposedFeatures.all);
 // Create a simple text document manager. The text document manager
 // supports full document sync only
 let documents: TextDocuments = new TextDocuments();
+
+let parsedFolders: Map<string, any> = new Map<string, any>();
 
 let hasConfigurationCapability: boolean = false;
 let hasWorkspaceFolderCapability: boolean = false;
@@ -48,6 +52,14 @@ connection.onInitialized(() => {
 		// Register for all configuration changes.
 		connection.client.register(DidChangeConfigurationNotification.type, undefined);
 	}
+	connection.workspace.getWorkspaceFolders().then((folders) => {
+		const regexp = /file:\/\/(.+)/;
+		folders.forEach((folder) => {
+			const folderPath = regexp.exec(folder.uri)[1];
+			const parsedFolder = importFromFilePath(folderPath);
+			parsedFolders.set(folder.uri, parsedFolder);
+		});
+	});
 	if (hasWorkspaceFolderCapability) {
 		connection.workspace.onDidChangeWorkspaceFolders((_event) => {
 			connection.console.log('Workspace folder change event received.');
@@ -101,6 +113,7 @@ documents.onDidClose(e => {
 // The content of a text document has changed. This event is emitted
 // when the text document first opened or when its content has changed.
 documents.onDidChangeContent((change) => {
+	connection.console.log(`ParsedFolders size = ${parsedFolders.size}`);
 	validateTextDocument(change.document);
 });
 

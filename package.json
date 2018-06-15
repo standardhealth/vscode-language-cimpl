@@ -16,7 +16,7 @@
 		"vscode": "^1.23.0"
 	},
 	"activationEvents": [
-		"onLanguage:plaintext"
+		"onLanguage:cimpl"
 	],
 	"main": "./client/out/extension",
 	"categories": [

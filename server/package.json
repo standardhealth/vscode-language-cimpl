@@ -12,7 +12,11 @@
 		"url": "https://github.com/Microsoft/vscode-extension-samples"
 	},
 	"dependencies": {
-		"vscode-languageserver": "^4.1.3"
+		"antlr4": "~4.6.0",
+		"shr-text-import": "^5.4.0",
+		"vscode-languageserver": "^4.1.3",
+		"bunyan": "^1.8.9",
+		"shr-models": "^5.5.0"
 	},
 	"scripts": {}
 }

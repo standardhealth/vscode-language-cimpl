@@ -9,6 +9,9 @@
 			"include": "#strings"
 		},
 		{
+			"include": "#urls"
+		},
+		{
 			"include": "#comments"
 		},
 		{
@@ -47,6 +50,19 @@
 				{
 					"name": "constant.character.escape.cimpl",
 					"match": "\\\\."
+				}
+			]
+		},
+		"urls": {
+			"name": "url.cimpl",
+			"patterns": [
+				{
+					"match": "\\b(https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%_\\+.~#?&\\/\\/=]*))\\b",
+					"captures": {
+						"0": {
+							"name": "string.unquoted.url.cimpl"
+						}
+					}
 				}
 			]
 		},

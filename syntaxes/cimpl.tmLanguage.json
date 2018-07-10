@@ -1,133 +1,149 @@
 {
-  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
-  "name": "CIMPL",
-  "patterns": [
-    {
-      "include": "#keywords"
-    },
-    {
-      "include": "#strings"
-    },
-    {
-      "include": "#comments"
-    },
-    {
-      "include": "#constants"
-    },
-    {
-      "include": "#concepts"
-    }
-  ],
-  "repository": {
-    "keywords": {
-      "patterns": [
-        {
-          "name": "keyword.control.cimpl",
-          "match": "\\b(Grammar|DataElement|Namespace|Uses|Path|CodeSystem|Element|EntryElement|Based on|Value|Concept|Description|ValueSet|Target)\\b:"
-        },
-        {
-          "name": "keyword.reserved.cimpl",
-          "match": "\\b(Grammar|Map|Namespace|TBD|Abstract)\\b"
-        },
-        {
-          "name": "support.function.cimpl",
-          "match": "\\b(Includes codes from|Includes codes descending from|and not descending from|maps to|ref|or|with|must be|should be|could be|if covered|from|units|is|is type|value is type|includes)\\b"
-        },
-        {
-          "name": "keyword.punctuation.cimpl",
-          "match": "(\\\\.|=|,|\\\\.\\\\.)"
-        }
-      ]
-    },
-    "strings": {
-      "name": "string.quoted.double.cimpl",
-      "begin": "\"",
-      "end": "\"",
-      "patterns": [
-        {
-          "name": "constant.character.escape.cimpl",
-          "match": "\\\\."
-        }
-      ]
-    },
-    "comments": {
-      "name": "comment.cimpl",
-      "patterns": [
-        {
-          "begin": "(\\s|^)//",
-          "beginCaptures": {
-            "0": {
-              "name": "punctuation.definition.comment.cimpl"
-            }
-          },
-          "end": "$",
-          "name": "comment.line.double-slash.cimpl"
-        },
-        {
-          "name": "comment.block.cimpl",
-          "begin": "/\\*",
-          "beginCaptures": {
-            "0": {
-              "name": "punctuation.definition.comment.cimpl"
-            }
-          },
-          "end": "\\*/",
-          "endCaptures": {
-            "0": {
-              "name": "punctuation.definition.comment.cimpl"
-            }
-          }
-        }
-      ]
-    },
-    "constants": {
-      "name": "constant.cimpl",
-      "patterns": [
-        {
-          "name": "constant.language.primitives.cimpl",
-          "match": "\\b(boolean|integer|string|decimal|uri|base64Binary|instant|date|dateTime|time|code|oid|id|markdown|unsignedInt|positiveInt|xhtml|TBD|TBD#TBD|true|false)\\b"
-        },
-        {
-          "name": "variable.language.underscore.cimpl",
-          "match": "\\b(_Concept|_Entry|_Value)\\b"
-        },
-        {
-          "match": "\\b\\d(?>_?\\d)*(?=\\.\\d|[eE])(\\.\\d(?>_?\\d)*)?([eE][-+]?\\d(?>_?\\d)*)?r?i?\\b",
-          "name": "constant.numeric.float.cimpl"
-        },
-        {
-          "match": "\\b(0|(0[dD]\\d|[1-9])(?>_?\\d)*)r?i?\\b",
-          "name": "constant.numeric.integer.cimpl"
-        },
-        {
-          "match": "\\b(\\*)\\b",
-          "name": "constant.numeric.wildcard.cimpl"
-        }
-      ]
-    },
-    "concepts": {
-      "name": "concepts.cimpl",
-      "patterns": [
-        {
-          "name": "variable.concept.cimpl",
-          "match": "(\\S*)#(\\S+)\\b"
-        }
-      ]
-    },
-    "classes": {
-      "name": "classes.cimpl",
-      "patterns": [
-        {
-          "name": "meta.class.cimpl",
-          "match": "^\\s*Element:\\s+([A-Z]\\w+)",
-          "captures": {
-            "1": {
-              "name": "entity.name.class"
-            }
-          }
-        }
-      ]
-    }
-  },
-  "scopeName": "source.cimpl"
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "CIMPL",
+	"patterns": [
+		{
+			"include": "#keywords"
+		},
+		{
+			"include": "#strings"
+		},
+		{
+			"include": "#urls"
+		},
+		{
+			"include": "#comments"
+		},
+		{
+			"include": "#constants"
+		},
+		{
+			"include": "#concepts"
+		}
+	],
+	"repository": {
+		"keywords": {
+			"patterns": [
+				{
+					"name": "keyword.reserved.cimpl",
+					"match": "\\b(DataElement|ValueSet|Map|TBD|Abstract)\\b"
+				},
+				{
+					"name": "keyword.control.cimpl",
+					"match": "\\b(Grammar|DataElement|Namespace|Uses|Path|CodeSystem|Element|EntryElement|Based on|Value|Concept|Description|ValueSet|Target)\\b:"
+				},
+				{
+					"name": "support.function.cimpl",
+					"match": "\\b(Includes codes from|Includes codes descending from|and not descending from|maps to|ref|or|with|must be|should be|could be|if covered|from|units|is|is type|value is type|includes|constrain|fix)\\b"
+				},
+				{
+					"name": "keyword.punctuation.cimpl",
+					"match": "(\\\\.|=|,|\\\\.\\\\.)"
+				}
+			]
+		},
+		"strings": {
+			"name": "string.quoted.double.cimpl",
+			"begin": "\"",
+			"end": "\"",
+			"patterns": [
+				{
+					"name": "constant.character.escape.cimpl",
+					"match": "\\\\."
+				}
+			]
+		},
+		"urls": {
+			"name": "url.cimpl",
+			"patterns": [
+				{
+					"match": "\\b(https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%_\\+.~#?&\\/\\/=]*))\\b",
+					"captures": {
+						"0": {
+							"name": "string.unquoted.url.cimpl"
+						}
+					}
+				}
+			]
+		},
+		"comments": {
+			"name": "comment.cimpl",
+			"patterns": [
+				{
+					"begin": "(\\s|^)//",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.comment.cimpl"
+						}
+					},
+					"end": "$",
+					"name": "comment.line.double-slash.cimpl"
+				},
+				{
+					"name": "comment.block.cimpl",
+					"begin": "/\\*",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.comment.cimpl"
+						}
+					},
+					"end": "\\*/",
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.definition.comment.cimpl"
+						}
+					}
+				}
+			]
+		},
+		"constants": {
+			"name": "constant.cimpl",
+			"patterns": [
+				{
+					"name": "constant.language.primitives.cimpl",
+					"match": "\\b(boolean|integer|string|decimal|uri|base64Binary|instant|date|dateTime|time|code|oid|id|markdown|unsignedInt|positiveInt|xhtml|TBD|TBD#TBD|true|false)\\b"
+				},
+				{
+					"name": "variable.language.underscore.cimpl",
+					"match": "\\b(_Concept|_Entry|_Value)\\b"
+				},
+				{
+					"match": "\\b\\d(?>_?\\d)*(?=\\.\\d|[eE])(\\.\\d(?>_?\\d)*)?([eE][-+]?\\d(?>_?\\d)*)?r?i?\\b",
+					"name": "constant.numeric.float.cimpl"
+				},
+				{
+					"match": "\\b(0|(0[dD]\\d|[1-9])(?>_?\\d)*)r?i?\\b",
+					"name": "constant.numeric.integer.cimpl"
+				},
+				{
+					"match": "\\b(\\*)\\b",
+					"name": "constant.numeric.wildcard.cimpl"
+				}
+			]
+		},
+		"concepts": {
+			"name": "concepts.cimpl",
+			"patterns": [
+				{
+					"name": "variable.concept.cimpl",
+					"match": "(\\S*)#(\\S+)\\b"
+				}
+			]
+		},
+		"classes": {
+			"name": "classes.cimpl",
+			"patterns": [
+				{
+					"name": "meta.class.cimpl",
+					"match": "^\\s*Element:\\s+([A-Z]\\w+)",
+					"captures": {
+						"1": {
+							"name": "entity.name.class"
+						}
+					}
+				}
+			]
+		}
+	},
+	"scopeName": "source.cimpl"
 }

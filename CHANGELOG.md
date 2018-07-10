@@ -3,6 +3,13 @@ All notable changes to the "vscode-language-cimpl" extension will be documented 
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 0.2.0 - 2018-07-10
+
+- Added highlighting for URLs as unquoted strings
+- Added `constrain` to the list of keywords
+- Added `fix` to the list of functions
+- Added several Grammar definitions to be highlighted
+
 ### 0.1.3 - 2018-05-24
 
 - Added `Target` to the list of keywords

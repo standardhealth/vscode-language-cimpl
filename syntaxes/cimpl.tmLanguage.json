@@ -25,16 +25,16 @@
 		"keywords": {
 			"patterns": [
 				{
+					"name": "keyword.reserved.cimpl",
+					"match": "\\b(DataElement|ValueSet|Map|TBD|Abstract)\\b"
+				},
+				{
 					"name": "keyword.control.cimpl",
 					"match": "\\b(Grammar|DataElement|Namespace|Uses|Path|CodeSystem|Element|EntryElement|Based on|Value|Concept|Description|ValueSet|Target)\\b:"
 				},
 				{
-					"name": "keyword.reserved.cimpl",
-					"match": "\\b(Grammar|Map|Namespace|TBD|Abstract)\\b"
-				},
-				{
 					"name": "support.function.cimpl",
-					"match": "\\b(Includes codes from|Includes codes descending from|and not descending from|maps to|ref|or|with|must be|should be|could be|if covered|from|units|is|is type|value is type|includes)\\b"
+					"match": "\\b(Includes codes from|Includes codes descending from|and not descending from|maps to|ref|or|with|must be|should be|could be|if covered|from|units|is|is type|value is type|includes|constrain|fix)\\b"
 				},
 				{
 					"name": "keyword.punctuation.cimpl",

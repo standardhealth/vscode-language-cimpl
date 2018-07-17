@@ -16,7 +16,7 @@ export function importFromFilePath(filePath: string) {
     const parser = new SHRDataElementParser(tokens);
     parser.removeErrorListeners(); // Only log errors during the import
     parser.buildParseTrees = true;
-    tree = parser.doc();
+    tree[file] = parser.doc();
   }
   return tree;
 }

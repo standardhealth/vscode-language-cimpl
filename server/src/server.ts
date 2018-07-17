@@ -20,7 +20,7 @@ let connection = createConnection(ProposedFeatures.all);
 // supports full document sync only
 let documents: TextDocuments = new TextDocuments();
 
-let parsedFolders: Map<string, any> = new Map<string, any>();
+let parsedFiles: any = {};
 
 let hasConfigurationCapability: boolean = false;
 let hasWorkspaceFolderCapability: boolean = false;
@@ -41,6 +41,7 @@ connection.onInitialize((params: InitializeParams) => {
 			textDocumentSync: documents.syncKind,
             // Tell the client that the server supports code completion
             completionProvider: {
+				definitionProvider : true,
                 resolveProvider: true
             }
 		}
@@ -55,9 +56,11 @@ connection.onInitialized(() => {
 	connection.workspace.getWorkspaceFolders().then((folders) => {
 		const regexp = /file:\/\/(.+)/;
 		folders.forEach((folder) => {
+			console.log(folder);
 			const folderPath = regexp.exec(folder.uri)[1];
 			const parsedFolder = importFromFilePath(folderPath);
-			parsedFolders.set(folder.uri, parsedFolder);
+			parsedFiles = Object.assign(parsedFolder, parsedFiles);
+			// parsedFiles.set(folder.uri, parsedFolder);
 		});
 	});
 	if (hasWorkspaceFolderCapability) {
@@ -113,14 +116,13 @@ documents.onDidClose(e => {
 // The content of a text document has changed. This event is emitted
 // when the text document first opened or when its content has changed.
 documents.onDidChangeContent((change) => {
-	connection.console.log(`ParsedFolders size = ${parsedFolders.size}`);
+	connection.console.log(`parsedFiles size = ${parsedFiles.size}`);
 	validateTextDocument(change.document);
 });
 
 async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 	// In this simple example we get the settings for every validate run.
 	let settings = await getDocumentSettings(textDocument.uri);
-
 	// The validator creates diagnostics for all uppercase words length 2 and more
 	let text = textDocument.getText();
 	let pattern = /\b[A-Z]{2,}\b/g;
@@ -175,6 +177,7 @@ connection.onCompletion((_textDocumentPosition: TextDocumentPositionParams): Com
 	// The pass parameter contains the position of the text document in
 	// which code complete got requested. For the example we ignore this
 	// info and always provide the same completion items.
+	let fileName : string = _textDocumentPosition.textDocument.uri.replace('file://', '');
 	return [
 		{
 			label: 'TypeScript',

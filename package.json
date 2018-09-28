@@ -18,34 +18,11 @@
 	"activationEvents": [
 		"onLanguage:cimpl"
 	],
-	"main": "./client/out/extension",
+	"main": "./out/extension",
 	"categories": [
 		"Programming Languages"
 	],
 	"contributes": {
-		"configuration": {
-			"type": "object",
-			"title": "Example configuration",
-			"properties": {
-				"languageServerExample.maxNumberOfProblems": {
-					"scope": "resource",
-					"type": "number",
-					"default": 100,
-					"description": "Controls the maximum number of problems produced by the server."
-				},
-				"languageServerExample.trace.server": {
-					"scope": "window",
-					"type": "string",
-					"enum": [
-						"off",
-						"messages",
-						"verbose"
-					],
-					"default": "off",
-					"description": "Traces the communication between VSCode and the language server."
-				}
-			}
-		},
 		"languages": [
 			{
 				"id": "cimpl",
@@ -66,20 +43,51 @@
 				"scopeName": "source.cimpl",
 				"path": "./syntaxes/cimpl.tmLanguage.json"
 			}
+		],
+		"commands": [
+			{
+				"command": "extension.parseFolders",
+				"title": "Parse Folders"
+			},
+			{
+				"command": "extension.moveUpOneLine",
+				"title": "Move Up One Line"
+			},
+			{
+				"command": "extension.moveDownOneLine",
+				"title": "Move Down One Line"
+			},
+			{
+				"command": "extension.moveLeftOneCharacter",
+				"title": "Move Left One Character"
+			},
+			{
+				"command": "extension.moveRightOneCharacter",
+				"title": "Move Right One Character"
+			},
+			{
+				"command": "extension.selectNextCharacter",
+				"title": "Select Next Character"
+			},
+			{
+				"command": "extension.sayHello",
+				"title": "Say Hello"
+			}
 		]
 	},
 	"scripts": {
-		"vscode:prepublish": "cd client && npm run update-vscode && cd .. && npm run compile",
-		"compile:client": "tsc -p ./client/tsconfig.json",
-		"compile:server": "tsc -p ./server/tsconfig.json",
-		"watch:client": "tsc -w -p ./client/tsconfig.json",
-		"watch:server": "tsc -w -p ./server/tsconfig.json",
-		"compile": "npm run compile:client && npm run compile:server",
-		"postinstall": "cd client && npm install && cd ../server && npm install && cd .."
+		"vscode:prepublish": "tsc -p ./",
+		"compile": "tsc -watch -p ./",
+		"postinstall": "node ./node_modules/vscode/bin/install",
+		"test": "node ./node_modules/vscode/bin/test"
 	},
 	"devDependencies": {
 		"@types/mocha": "^5.2.0",
 		"@types/node": "^8.0.0",
 		"typescript": "2.8.3"
+	},
+	"dependencies": {
+		"vscode": "^1.1.18",
+		"antlr4": "~4.6.0"
 	}
 }

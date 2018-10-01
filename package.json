@@ -44,36 +44,7 @@
 				"path": "./syntaxes/cimpl.tmLanguage.json"
 			}
 		],
-		"commands": [
-			{
-				"command": "extension.parseFolders",
-				"title": "Parse Folders"
-			},
-			{
-				"command": "extension.moveUpOneLine",
-				"title": "Move Up One Line"
-			},
-			{
-				"command": "extension.moveDownOneLine",
-				"title": "Move Down One Line"
-			},
-			{
-				"command": "extension.moveLeftOneCharacter",
-				"title": "Move Left One Character"
-			},
-			{
-				"command": "extension.moveRightOneCharacter",
-				"title": "Move Right One Character"
-			},
-			{
-				"command": "extension.selectNextCharacter",
-				"title": "Select Next Character"
-			},
-			{
-				"command": "extension.sayHello",
-				"title": "Say Hello"
-			}
-		]
+		"commands": []
 	},
 	"scripts": {
 		"vscode:prepublish": "tsc -p ./",

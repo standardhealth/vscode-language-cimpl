@@ -24,21 +24,13 @@ export function activate(context: ExtensionContext) {
 	// 	});
 	// }));
 
-	context.subscriptions.push(commands.registerCommand('extension.selectNextCharacter', () => {
-		const editor = window.activeTextEditor;
-		const position = editor.selection.active;
+	// Example command for text editing, kept for reference
+	// context.subscriptions.push(commands.registerCommand('extension.sayHello', () => {
+	// 	const editor = window.activeTextEditor;
+	// 	const position = editor.selection.active;
 
-        let newPosition = position.with(position.line, position.character + 1);
-        let newSelection = new Selection(position, newPosition);
-        editor.selection = newSelection;
-	}));
-
-	context.subscriptions.push(commands.registerCommand('extension.sayHello', () => {
-		const editor = window.activeTextEditor;
-		const position = editor.selection.active;
-
-        editor.edit((editBuilder : TextEditorEdit) => {
-			editBuilder.insert(position, "Hello");
-		});
-	}));
+    //     editor.edit((editBuilder : TextEditorEdit) => {
+	// 		editBuilder.insert(position, "Hello");
+	// 	});
+	// }));
 }

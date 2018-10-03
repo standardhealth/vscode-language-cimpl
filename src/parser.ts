@@ -1,8 +1,8 @@
 import fs = require('fs');
 import path = require('path');
 import { FileStream, CommonTokenStream } from 'antlr4/index';
-const { SHRDataElementParser } = require('./parsers/SHRDataElementParser');
-const { SHRDataElementLexer } = require('./parsers/SHRDataElementLexer');
+const { SHRDataElementParser } = require('./parsers/SHRDataElementParser.js');
+const { SHRDataElementLexer } = require('./parsers/SHRDataElementLexer.js');
 
 export function importFromFilePath(filePath: string) {
   const filesByType = processPath(filePath);

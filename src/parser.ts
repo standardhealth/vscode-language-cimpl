@@ -3,6 +3,10 @@ import path = require('path');
 import { FileStream, CommonTokenStream } from 'antlr4/index';
 const { SHRDataElementParser } = require('./parsers/SHRDataElementParser.js');
 const { SHRDataElementLexer } = require('./parsers/SHRDataElementLexer.js');
+const { SHRValueSetLexer } = require('./parsers/SHRValueSetLexer.js');
+const { SHRValueSetParser } = require ('./parsers/SHRValueSetParser.js');
+const { SHRMapLexer } = require('./parsers/SHRMapLexer.js');
+const { SHRMapParser } = require ('./parsers/SHRMapParser.js');
 
 export function importFromFilePath(filePath: string) {
   const filesByType = processPath(filePath);
@@ -18,6 +22,29 @@ export function importFromFilePath(filePath: string) {
     parser.buildParseTrees = true;
     tree[file] = parser.doc();
   }
+
+  for (const file of filesByType.valueSet) {
+    const chars = new FileStream(file);
+    const lexer = new SHRValueSetLexer(chars);
+    lexer.removeErrorListeners(); // Only log errors during the import
+    const tokens = new CommonTokenStream(lexer);
+    const parser = new SHRValueSetParser(tokens);
+    parser.removeErrorListeners(); // Only log errors during the import
+    parser.buildParseTrees = true;
+    tree[file] = parser.doc();
+  }
+
+  for (const file of filesByType.map) {
+    const chars = new FileStream(file);
+    const lexer = new SHRMapLexer(chars);
+    lexer.removeErrorListeners(); // Only log errors during the import
+    const tokens = new CommonTokenStream(lexer);
+    const parser = new SHRMapParser(tokens);
+    parser.removeErrorListeners(); // Only log errors during the import
+    parser.buildParseTrees = true;
+    tree[file] = parser.doc();
+  }
+
   return tree;
 }
 

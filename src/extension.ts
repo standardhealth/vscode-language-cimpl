@@ -25,8 +25,13 @@ export function activate(context: ExtensionContext) {
 		for (let i: number = position.line; i >= 0; i--) {
 			const currentLine: TextLine = editor.document.lineAt(i);
 			if (currentLine.text.includes("Element:") && !currentLine.text.includes("//")) {
-				const currentLineArray: string[] = currentLine.text.replace(/\t/g, " ").split(" ");
-				elementName = currentLineArray[currentLineArray.length - 1];
+				let currentLineArray: string[] = currentLine.text.replace(/\t/g, " ").trim().split(" ");
+				currentLineArray = currentLineArray.filter((e) => {
+					return (e.trim().length > 0);
+				});
+				if (currentLineArray.length === 2) {
+					elementName = currentLineArray[1];
+				}
 				break;
 			}
 		}

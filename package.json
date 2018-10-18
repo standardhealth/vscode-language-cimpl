@@ -3,7 +3,7 @@
 	"description": "VSCode CIMPL Language Support",
 	"author": "The MITRE Corporation",
 	"license": "Apache-2.0",
-	"version": "0.3.0",
+	"version": "0.4.0",
 	"publisher": "Standard Health Record",
 	"repository": {
 		"type": "git",

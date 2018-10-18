@@ -5,48 +5,37 @@
 'use strict';
 
 import {
-	commands, window, workspace, Selection, Position, TextEditor, TextEditorEdit, TextLine, ExtensionContext
+	commands, window, workspace, Selection, TextEditor, ExtensionContext
 } from 'vscode';
 
 import { importFromFilePath } from './parser';
 
 export function activate(context: ExtensionContext) {
 
-	context.subscriptions.push(commands.registerCommand('extension.parseFolders', () => {
+	context.subscriptions.push(commands.registerCommand('extension.goToDefinition', () => {
 		let parsedFiles: any = {};
 		const regexp = /file:\/\/(.+)/;
 		
-		const editor: TextEditor = window.activeTextEditor;
-		const selection: Selection = editor.selection;
-		const position: Position = selection.active;
-		let elementName: string;
-		let selectedText: string;
+		let editor: TextEditor = window.activeTextEditor;
 
-		for (let i: number = position.line; i >= 0; i--) {
-			const currentLine: TextLine = editor.document.lineAt(i);
-			if (currentLine.text.includes("Element:") && !currentLine.text.includes("//")) {
-				let currentLineArray: string[] = currentLine.text.replace(/\t/g, " ").trim().split(" ");
-				currentLineArray = currentLineArray.filter((e) => {
-					return (e.trim().length > 0);
-				});
-				if (currentLineArray.length === 2) {
-					elementName = currentLineArray[1];
-				}
-				break;
-			}
+		if (!editor) {
+			window.showErrorMessage("No active editor.");
+			return;
 		}
+
+		if (!(workspace && workspace.workspaceFolders)) {
+			window.showErrorMessage("No files in workspace.");
+			return;
+		}
+
+		const selection: Selection = editor.selection;
+		let selectedText: string;
 
 		if (!selection.isEmpty) {
 			selectedText = editor.document.getText(selection);
-			window.showInformationMessage(`Selected Text: ${selectedText}`);
 		} else {
 			window.showErrorMessage("No text selected.");
-		}
-
-		if (elementName) {
-			window.showInformationMessage(`Current Element: ${elementName}`);
-		} else {
-			window.showErrorMessage("Not editing Element.");
+			return;
 		}
 
 		workspace.workspaceFolders.forEach((folder) => {
@@ -55,11 +44,52 @@ export function activate(context: ExtensionContext) {
 			parsedFiles = Object.assign(parsedFolder, parsedFiles);
 		});
 
-		const parsedActiveFile = parsedFiles[editor.document.fileName];
-		if (parsedActiveFile) {
-			window.showInformationMessage(`File ${editor.document.fileName} parsed.`);
-		} else {
-			window.showErrorMessage(`Could not parse file ${editor.document.fileName}.`)
+		let definitionFound: boolean = false;
+
+		for (const fileName in parsedFiles) {
+			let lineNumber: number;
+			
+			const dataDefs = parsedFiles[fileName].children.find((c) => {
+				return c.constructor.name === 'DataDefsContext';
+			});
+
+			for (const dataDef of dataDefs.children) {
+				const def = dataDef.children.find((c) => {
+					return c.constructor.name === 'ElementDefContext'
+					|| c.constructor.name === 'EntryDefContext';
+				});
+
+				const header = def.children.find((c) => {
+					return c.constructor.name === 'ElementHeaderContext'
+					|| c.constructor.name === 'EntryHeaderContext';
+				});
+
+				const simpleName = header.children.find((c) => {
+					return c.constructor.name === 'SimpleNameContext';
+				});
+
+				if (simpleName && (simpleName.start.text === selectedText)) {
+					lineNumber = simpleName.start.line;
+					break;
+				}
+			};
+
+			if (lineNumber != null) {
+				workspace.openTextDocument(fileName).then((doc) => {
+					window.showTextDocument(doc).then((e) => {
+						const range = e.document.lineAt(lineNumber - 1).range;
+						e.selection = new Selection(range.start, range.end);
+						e.revealRange(range);
+					});
+				});
+
+				definitionFound = true;
+				break;
+			}
+		}
+
+		if (!definitionFound) {
+			window.showInformationMessage("Definition not found in workspace.");
 		}
 	}));
 }

@@ -46,8 +46,8 @@
 		],
 		"commands": [
 			{
-				"command": "extension.parseFolders",
-				"title": "Parse Folders"
+				"command": "extension.goToDefinition",
+				"title": "Go to Definition"
 			}
 		]
 	},

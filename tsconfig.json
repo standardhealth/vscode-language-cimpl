@@ -1,6 +1,7 @@
 {
 	"compilerOptions": {
 		"module": "commonjs",
+		"allowJs": true,
 		"target": "es5",
 		"outDir": "out",
 		"lib": [
@@ -10,6 +11,7 @@
 		"rootDir": "src"
 	},
 	"exclude": [
-		"node_modules"
+		"node_modules",
+		"out"
 	]
 }

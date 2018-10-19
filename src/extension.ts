@@ -53,6 +53,10 @@ export function activate(context: ExtensionContext) {
 				return c.constructor.name === 'DataDefsContext';
 			});
 
+			if (!dataDefs.children || (dataDefs.children.length <= 0)) {
+				continue;
+			}
+
 			for (const dataDef of dataDefs.children) {
 				const def = dataDef.children.find((c) => {
 					return c.constructor.name === 'ElementDefContext'

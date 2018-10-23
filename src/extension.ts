@@ -105,122 +105,12 @@ export function activate(context: ExtensionContext) {
 
 		const parsedFiles = getParsedFiles(workspace);
 
-		let attributes: string[] = [];
+		let attributes = {};
+		getInheritedAttributes(attributes, selectedText, parsedFiles);
 
-		for (const fileName in parsedFiles) {			
-			const dataDefs = parsedFiles[fileName].children.find((c) => {
-				return c.constructor.name === 'DataDefsContext';
-			});
-
-			if (!dataDefs.children || (dataDefs.children.length <= 0)) {
-				continue;
-			}
-
-			for (const dataDef of dataDefs.children) {
-				const def = dataDef.children.find((c) => {
-					return c.constructor.name === 'ElementDefContext'
-					|| c.constructor.name === 'EntryDefContext';
-				});
-
-				const header = def.children.find((c) => {
-					return c.constructor.name === 'ElementHeaderContext'
-					|| c.constructor.name === 'EntryHeaderContext';
-				});
-
-				const simpleName = header.children.find((c) => {
-					return c.constructor.name === 'SimpleNameContext';
-				});
-
-				if (simpleName && (simpleName.start.text === selectedText)) {
-					const values = def.children.find((c) => {
-						return c.constructor.name === 'ValuesContext';
-					});
-
-					let fields = [];
-					if (values.children) {
-						fields = values.children.filter((c) => {
-							return c.constructor.name === 'FieldContext';
-						});
-					}
-
-					for (const field of fields) {
-						const fieldType = field.children.find((c) => {
-							return c.constructor.name === 'FieldTypeContext';
-						});
-						
-						let simpleOrFQName = fieldType.children.find((c) => {
-							return c.constructor.name === 'SimpleOrFQNameContext';
-						});
-
-						if (!simpleOrFQName) {
-							const ref = fieldType.children.find((c) => {
-								return c.constructor.name === 'RefContext';
-							});
-
-							if (ref) {
-								simpleOrFQName = ref.children.find((c) => {
-									return c.constructor.name === 'SimpleOrFQNameContext';
-								});
-							}
-						}
-
-						if (!simpleOrFQName) {
-							const withConstraint = fieldType.children.find((c) => {
-								return c.constructor.name === 'ElementWithConstraintContext'
-								|| c.constructor.name === 'EntryWithConstraintContext';
-							});
-
-							if (withConstraint) {
-								simpleOrFQName = withConstraint.children.find((c) => {
-									return c.constructor.name === 'SimpleOrFQNameContext';
-								});
-							}
-						}
-
-						const attributeName = simpleOrFQName.children.find((c) => {
-							return c.constructor.name === 'SimpleNameContext';
-						});
-
-						const count = field.children.find((c) => {
-							return c.constructor.name === 'CountContext';
-						});
-
-						if (attributeName && attributeName.start.text && count && count.start.text && count.stop.text) {
-							attributes.push(`${attributeName.start.text}: ${count.start.text}..${count.stop.text}`);
-						}
-					}
-
-					const props = def.children.find((c) => {
-						return c.constructor.name === 'ElementPropsContext'
-						|| c.constructor.name === 'EntryPropsContext';
-					});
-
-					const propsList = props.children.filter((c) => {
-						return c.constructor.name === 'ElementPropContext'
-						|| c.constructor.name === 'EntryPropContext';
-					})
-
-					let parentName: string;
-
-					for (const prop of propsList) {
-						const basedOn = prop.children.find((c) => {
-							return c.constructor.name === 'BasedOnPropContext';
-						});
-						if (basedOn) {
-							parentName = basedOn.children.find((c) => {
-								return c.constructor.name === 'SimpleOrFQNameContext';
-							}).children.find((c) => {
-								return c.constructor.name === 'SimpleNameContext';
-							}).start.text;
-							break;
-						}
-					}
-					
-					window.showQuickPick(attributes);
-					break;
-				}
-			};
-		}
+		window.showQuickPick(Object.keys(attributes).map((a) => {
+			return `${a}: ${attributes[a]}`;
+		}));
 	}));
 }
 
@@ -239,4 +129,126 @@ const getParsedFiles = (workspace) => {
 	});
 
 	return parsedFiles;
+}
+
+const getInheritedAttributes = (attributes, name, files) => {
+	for (const fileName in files) {			
+		const dataDefs = files[fileName].children.find((c) => {
+			return c.constructor.name === 'DataDefsContext';
+		});
+
+		if (!dataDefs.children || (dataDefs.children.length <= 0)) {
+			continue;
+		}
+
+		for (const dataDef of dataDefs.children) {
+			const def = dataDef.children.find((c) => {
+				return c.constructor.name === 'ElementDefContext'
+				|| c.constructor.name === 'EntryDefContext';
+			});
+
+			const header = def.children.find((c) => {
+				return c.constructor.name === 'ElementHeaderContext'
+				|| c.constructor.name === 'EntryHeaderContext';
+			});
+
+			const simpleName = header.children.find((c) => {
+				return c.constructor.name === 'SimpleNameContext';
+			});
+
+			if (simpleName && (simpleName.start.text === name)) {
+				const values = def.children.find((c) => {
+					return c.constructor.name === 'ValuesContext';
+				});
+
+				let fields = [];
+				if (values.children) {
+					fields = values.children.filter((c) => {
+						return c.constructor.name === 'FieldContext';
+					});
+				}
+
+				for (const field of fields) {
+					const fieldType = field.children.find((c) => {
+						return c.constructor.name === 'FieldTypeContext';
+					});
+					
+					let simpleOrFQName = fieldType.children.find((c) => {
+						return c.constructor.name === 'SimpleOrFQNameContext';
+					});
+
+					if (!simpleOrFQName) {
+						const ref = fieldType.children.find((c) => {
+							return c.constructor.name === 'RefContext';
+						});
+
+						if (ref) {
+							simpleOrFQName = ref.children.find((c) => {
+								return c.constructor.name === 'SimpleOrFQNameContext';
+							});
+						}
+					}
+
+					if (!simpleOrFQName) {
+						const withConstraint = fieldType.children.find((c) => {
+							return c.constructor.name === 'ElementWithConstraintContext'
+							|| c.constructor.name === 'EntryWithConstraintContext';
+						});
+
+						if (withConstraint) {
+							simpleOrFQName = withConstraint.children.find((c) => {
+								return c.constructor.name === 'SimpleOrFQNameContext';
+							});
+						}
+					}
+
+					const attributeName = simpleOrFQName.children.find((c) => {
+						return c.constructor.name === 'SimpleNameContext';
+					});
+
+					const count = field.children.find((c) => {
+						return c.constructor.name === 'CountContext';
+					});
+
+					if (attributeName && attributeName.start.text && count && count.start.text && count.stop.text) {
+						if (!attributes[attributeName.start.text]) {
+							attributes[attributeName.start.text] = `${count.start.text}..${count.stop.text}`;
+						}
+					}
+				}
+
+				const props = def.children.find((c) => {
+					return c.constructor.name === 'ElementPropsContext'
+					|| c.constructor.name === 'EntryPropsContext';
+				});
+
+				const propsList = props.children.filter((c) => {
+					return c.constructor.name === 'ElementPropContext'
+					|| c.constructor.name === 'EntryPropContext';
+				})
+
+				let parentName: string;
+
+				for (const prop of propsList) {
+					const basedOn = prop.children.find((c) => {
+						return c.constructor.name === 'BasedOnPropContext';
+					});
+					if (basedOn) {
+						parentName = basedOn.children.find((c) => {
+							return c.constructor.name === 'SimpleOrFQNameContext';
+						}).children.find((c) => {
+							return c.constructor.name === 'SimpleNameContext';
+						}).start.text;
+						break;
+					}
+				}
+				
+				if (parentName) {
+					getInheritedAttributes(attributes, parentName, files);
+				}
+
+				break;
+			}
+		};
+	}
 }

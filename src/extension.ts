@@ -13,13 +13,15 @@ import { importFromFilePath } from './parser';
 export function activate(context: ExtensionContext) {
 
 	context.subscriptions.push(commands.registerCommand('extension.goToDefinition', () => {
-		let parsedFiles: any = {};
-		const regexp = /file:\/\/(.+)/;
-		
-		let editor: TextEditor = window.activeTextEditor;
-
+		const editor: TextEditor = window.activeTextEditor;
 		if (!editor) {
 			window.showErrorMessage("No active editor.");
+			return;
+		}
+
+		const selectedText: string = getSelectedText(editor);
+		if (!selectedText) {
+			window.showErrorMessage('No text selected.');
 			return;
 		}
 
@@ -28,21 +30,7 @@ export function activate(context: ExtensionContext) {
 			return;
 		}
 
-		const selection: Selection = editor.selection;
-		let selectedText: string;
-
-		if (!selection.isEmpty) {
-			selectedText = editor.document.getText(selection);
-		} else {
-			window.showErrorMessage("No text selected.");
-			return;
-		}
-
-		workspace.workspaceFolders.forEach((folder) => {
-			const folderPath = regexp.exec(folder.uri.toString())[1];
-			const parsedFolder = importFromFilePath(folderPath);
-			parsedFiles = Object.assign(parsedFolder, parsedFiles);
-		});
+		const parsedFiles = getParsedFiles(workspace);
 
 		let definitionFound: boolean = false;
 
@@ -97,14 +85,16 @@ export function activate(context: ExtensionContext) {
 		}
 	}));
 
-	context.subscriptions.push(commands.registerCommand('extension.getInheritedAttributes', () => {
-		let parsedFiles: any = {};
-		const regexp = /file:\/\/(.+)/;
-		
-		let editor: TextEditor = window.activeTextEditor;
-
+	context.subscriptions.push(commands.registerCommand('extension.getInheritedAttributes', () => {		
+		const editor: TextEditor = window.activeTextEditor;
 		if (!editor) {
 			window.showErrorMessage("No active editor.");
+			return;
+		}
+
+		const selectedText: string = getSelectedText(editor);
+		if (!selectedText) {
+			window.showErrorMessage('No text selected.');
 			return;
 		}
 
@@ -113,21 +103,9 @@ export function activate(context: ExtensionContext) {
 			return;
 		}
 
-		const selection: Selection = editor.selection;
-		let selectedText: string;
+		const parsedFiles = getParsedFiles(workspace);
 
-		if (!selection.isEmpty) {
-			selectedText = editor.document.getText(selection);
-		} else {
-			window.showErrorMessage("No text selected.");
-			return;
-		}
-
-		workspace.workspaceFolders.forEach((folder) => {
-			const folderPath = regexp.exec(folder.uri.toString())[1];
-			const parsedFolder = importFromFilePath(folderPath);
-			parsedFiles = Object.assign(parsedFolder, parsedFiles);
-		});
+		let attributes: string[] = [];
 
 		for (const fileName in parsedFiles) {			
 			const dataDefs = parsedFiles[fileName].children.find((c) => {
@@ -158,11 +136,12 @@ export function activate(context: ExtensionContext) {
 						return c.constructor.name === 'ValuesContext';
 					});
 
-					const fields = values.children.filter((c) => {
-						return c.constructor.name === 'FieldContext';
-					});
-
-					let attributes: string[] = [];
+					let fields = [];
+					if (values.children) {
+						fields = values.children.filter((c) => {
+							return c.constructor.name === 'FieldContext';
+						});
+					}
 
 					for (const field of fields) {
 						const fieldType = field.children.find((c) => {
@@ -210,6 +189,32 @@ export function activate(context: ExtensionContext) {
 							attributes.push(`${attributeName.start.text}: ${count.start.text}..${count.stop.text}`);
 						}
 					}
+
+					const props = def.children.find((c) => {
+						return c.constructor.name === 'ElementPropsContext'
+						|| c.constructor.name === 'EntryPropsContext';
+					});
+
+					const propsList = props.children.filter((c) => {
+						return c.constructor.name === 'ElementPropContext'
+						|| c.constructor.name === 'EntryPropContext';
+					})
+
+					let parentName: string;
+
+					for (const prop of propsList) {
+						const basedOn = prop.children.find((c) => {
+							return c.constructor.name === 'BasedOnPropContext';
+						});
+						if (basedOn) {
+							parentName = basedOn.children.find((c) => {
+								return c.constructor.name === 'SimpleOrFQNameContext';
+							}).children.find((c) => {
+								return c.constructor.name === 'SimpleNameContext';
+							}).start.text;
+							break;
+						}
+					}
 					
 					window.showQuickPick(attributes);
 					break;
@@ -217,4 +222,21 @@ export function activate(context: ExtensionContext) {
 			};
 		}
 	}));
+}
+
+const getSelectedText = (editor) => {
+	return editor.document.getText(editor.selection);
+}
+
+const getParsedFiles = (workspace) => {
+	const regexp = /file:\/\/(.+)/;
+	let parsedFiles = {};
+
+	workspace.workspaceFolders.forEach((folder) => {
+		const folderPath = regexp.exec(folder.uri.toString())[1];
+		const parsedFolder = importFromFilePath(folderPath);
+		parsedFiles = Object.assign(parsedFolder, parsedFiles);
+	});
+
+	return parsedFiles;
 }

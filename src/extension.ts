@@ -162,16 +162,41 @@ export function activate(context: ExtensionContext) {
 						return c.constructor.name === 'FieldContext';
 					});
 
-					let attributes = {};
+					let attributes: string[] = [];
 
 					for (const field of fields) {
 						const fieldType = field.children.find((c) => {
 							return c.constructor.name === 'FieldTypeContext';
 						});
-
-						const simpleOrFQName = fieldType.children.find((c) => {
+						
+						let simpleOrFQName = fieldType.children.find((c) => {
 							return c.constructor.name === 'SimpleOrFQNameContext';
 						});
+
+						if (!simpleOrFQName) {
+							const ref = fieldType.children.find((c) => {
+								return c.constructor.name === 'RefContext';
+							});
+
+							if (ref) {
+								simpleOrFQName = ref.children.find((c) => {
+									return c.constructor.name === 'SimpleOrFQNameContext';
+								});
+							}
+						}
+
+						if (!simpleOrFQName) {
+							const withConstraint = fieldType.children.find((c) => {
+								return c.constructor.name === 'ElementWithConstraintContext'
+								|| c.constructor.name === 'EntryWithConstraintContext';
+							});
+
+							if (withConstraint) {
+								simpleOrFQName = withConstraint.children.find((c) => {
+									return c.constructor.name === 'SimpleOrFQNameContext';
+								});
+							}
+						}
 
 						const attributeName = simpleOrFQName.children.find((c) => {
 							return c.constructor.name === 'SimpleNameContext';
@@ -182,11 +207,11 @@ export function activate(context: ExtensionContext) {
 						});
 
 						if (attributeName && attributeName.start.text && count && count.start.text && count.stop.text) {
-							attributes[attributeName.start.text] = `${count.start.text}..${count.stop.text}`;
+							attributes.push(`${attributeName.start.text}: ${count.start.text}..${count.stop.text}`);
 						}
 					}
 					
-					window.showQuickPick(Object.keys(attributes));
+					window.showQuickPick(attributes);
 					break;
 				}
 			};

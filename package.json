@@ -48,6 +48,10 @@
 			{
 				"command": "extension.goToDefinition",
 				"title": "Go to Definition"
+			},
+			{
+				"command": "extension.getInheritedAttributes",
+				"title": "Get Inherited Attributes"
 			}
 		]
 	},

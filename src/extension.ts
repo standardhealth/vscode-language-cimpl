@@ -5,7 +5,7 @@
 'use strict';
 
 import {
-	commands, window, workspace, Selection, TextEditor, ExtensionContext
+	commands, window, workspace, Selection, Position, TextEditor, ExtensionContext, TextEditorEdit
 } from 'vscode';
 
 import { importFromFilePath } from './parser';
@@ -85,7 +85,7 @@ export function activate(context: ExtensionContext) {
 		}
 	}));
 
-	context.subscriptions.push(commands.registerCommand('extension.getInheritedAttributes', () => {		
+	context.subscriptions.push(commands.registerCommand('extension.getInheritedAttributes', async () => {		
 		const editor: TextEditor = window.activeTextEditor;
 		if (!editor) {
 			window.showErrorMessage("No active editor.");
@@ -108,9 +108,28 @@ export function activate(context: ExtensionContext) {
 		let attributes = {};
 		getInheritedAttributes(attributes, selectedText, parsedFiles);
 
-		window.showQuickPick(Object.keys(attributes).map((a) => {
-			return `${a}: ${attributes[a]}`;
+		if (Object.keys(attributes).length <= 0) {
+			window.showInformationMessage("No inherited attributes.");
+			return;
+		}
+
+		const attribute = await window.showQuickPick(Object.keys(attributes).map((a) => {
+			return {
+				label: a,
+				detail: attributes[a]
+			};
 		}));
+
+		if (attribute) {
+			const wordEndPosition: Position = getWordEndPosition(editor);
+
+			await editor.edit((editBuilder : TextEditorEdit) => {
+				editBuilder.insert(wordEndPosition, `.${attribute.label}`);
+			});
+
+			const endOfLinePosition: Position = editor.document.lineAt(wordEndPosition).range.end;
+			editor.selection = new Selection(endOfLinePosition, endOfLinePosition);
+		}
 	}));
 }
 
@@ -183,6 +202,13 @@ const getInheritedAttributes = (attributes, name, files) => {
 								return c.constructor.name === 'SimpleOrFQNameContext';
 							});
 						}
+
+						if (!simpleOrFQName) {
+							simpleOrFQName = withConstraint.children.find((c) => {
+								return c.constructor.name === 'ElementPathContext'
+								|| c.constructor.name === 'EntryPathContext';
+							});
+						}
 					}
 
 					const attributeName = simpleOrFQName.children.find((c) => {
@@ -238,10 +264,18 @@ const getInheritedAttributes = (attributes, name, files) => {
 
 const getSelectedText = (editor) => {
 	if (!editor.selection.isEmpty) {
-		return editor.document.getText(editor.selection);
+		return editor.document.getText(editor.selection).trim();
 	}
 
-	return editor.document.getText(editor.document.getWordRangeAtPosition(editor.selection.active));
+	return editor.document.getText(editor.document.getWordRangeAtPosition(editor.selection.active)).trim();
+}
+
+const getWordEndPosition = (editor) => {
+	if (!editor.selection.isEmpty) {
+		return editor.selection.end;
+	}
+
+	return editor.document.getWordRangeAtPosition(editor.selection.active).end;
 }
 
 const getParsedFiles = (workspace) => {

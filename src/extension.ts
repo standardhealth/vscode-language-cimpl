@@ -279,11 +279,10 @@ const getWordEndPosition = (editor) => {
 }
 
 const getParsedFiles = (workspace) => {
-	const regexp = /file:\/\/(.+)/;
 	let parsedFiles = {};
 
 	workspace.workspaceFolders.forEach((folder) => {
-		const folderPath = regexp.exec(folder.uri.toString())[1];
+		const folderPath = folder.uri.fsPath;
 		const parsedFolder = importFromFilePath(folderPath);
 		parsedFiles = Object.assign(parsedFolder, parsedFiles);
 	});

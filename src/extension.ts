@@ -114,23 +114,6 @@ export function activate(context: ExtensionContext) {
 	}));
 }
 
-const getSelectedText = (editor) => {
-	return editor.document.getText(editor.selection);
-}
-
-const getParsedFiles = (workspace) => {
-	const regexp = /file:\/\/(.+)/;
-	let parsedFiles = {};
-
-	workspace.workspaceFolders.forEach((folder) => {
-		const folderPath = regexp.exec(folder.uri.toString())[1];
-		const parsedFolder = importFromFilePath(folderPath);
-		parsedFiles = Object.assign(parsedFolder, parsedFiles);
-	});
-
-	return parsedFiles;
-}
-
 const getInheritedAttributes = (attributes, name, files) => {
 	for (const fileName in files) {			
 		const dataDefs = files[fileName].children.find((c) => {
@@ -251,4 +234,25 @@ const getInheritedAttributes = (attributes, name, files) => {
 			}
 		};
 	}
+}
+
+const getSelectedText = (editor) => {
+	if (!editor.selection.isEmpty) {
+		return editor.document.getText(editor.selection);
+	}
+
+	return editor.document.getText(editor.document.getWordRangeAtPosition(editor.selection.active));
+}
+
+const getParsedFiles = (workspace) => {
+	const regexp = /file:\/\/(.+)/;
+	let parsedFiles = {};
+
+	workspace.workspaceFolders.forEach((folder) => {
+		const folderPath = regexp.exec(folder.uri.toString())[1];
+		const parsedFolder = importFromFilePath(folderPath);
+		parsedFiles = Object.assign(parsedFolder, parsedFiles);
+	});
+
+	return parsedFiles;
 }

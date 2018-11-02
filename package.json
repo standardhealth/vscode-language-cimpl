@@ -3,7 +3,7 @@
 	"description": "VSCode CIMPL Language Support",
 	"author": "The MITRE Corporation",
 	"license": "Apache-2.0",
-	"version": "0.5.1",
+	"version": "0.5.2",
 	"publisher": "Standard Health Record",
 	"repository": {
 		"type": "git",
@@ -46,8 +46,8 @@
 		],
 		"commands": [
 			{
-				"command": "extension.showInheritedAttributes",
-				"title": "Show Inherited Attributes"
+				"command": "extension.getInheritedAttributes",
+				"title": "Get Inherited Attributes"
 			}
 		]
 	},

@@ -5,123 +5,127 @@
 'use strict';
 
 import {
-	commands, window, workspace, Selection, Position, TextEditor, ExtensionContext, TextEditorEdit
+	commands,
+	languages,
+	window,
+	workspace,
+	CancellationToken,
+	DefinitionProvider,
+	DocumentFilter,
+	ExtensionContext,
+	Location,
+	Position,
+	Selection,
+	TextDocument,
+	TextEditor,
+	TextEditorEdit,
+	Uri
 } from 'vscode';
 
 import { importFromFilePath } from './parser';
-import { Socket } from 'net';
+
+const CIMPL_MODE: DocumentFilter = { language: 'cimpl', scheme: 'file' };
 
 export function activate(context: ExtensionContext) {
 
-	context.subscriptions.push(commands.registerCommand('extension.goToDefinition', () => {
-		const editor: TextEditor = window.activeTextEditor;
-		if (!editor) {
-			window.showErrorMessage("No active editor.");
-			return;
-		}
-
-		const selectedText: string = getSelectedText(editor);
-		if (!selectedText) {
-			window.showErrorMessage('No text selected.');
-			return;
-		}
-
-		if (!(workspace && workspace.workspaceFolders)) {
-			window.showErrorMessage("No files in workspace.");
-			return;
-		}
-
-		const parsedFiles = getParsedFiles(workspace);
-
-		let definitionFound: boolean = false;
-
-		for (const fileName in parsedFiles) {
-			let lineNumber: number;
-			
-			const dataDefs = parsedFiles[fileName].dataDefs();
-			if (!dataDefs.dataDef() || (dataDefs.dataDef().length <= 0)) {
-				continue;
-			}
-
-			for (const dataDef of dataDefs.dataDef()) {
-				const def = dataDef.elementDef() || dataDef.entryDef();
-				const header = def.elementHeader ? def.elementHeader() : def.entryHeader();
-				const simpleName = header.simpleName();
-
-				if (simpleName && (simpleName.start.text === selectedText)) {
-					lineNumber = simpleName.start.line;
-					break;
-				}
-			};
-
-			if (lineNumber != null) {
-				workspace.openTextDocument(fileName).then((doc) => {
-					window.showTextDocument(doc).then((e) => {
-						const range = e.document.lineAt(lineNumber - 1).range;
-						e.selection = new Selection(range.start, range.end);
-						e.revealRange(range);
-					});
-				});
-
-				definitionFound = true;
-				break;
-			}
-		}
-
-		if (!definitionFound) {
-			window.showInformationMessage("Definition not found in workspace.");
-		}
-	}));
-
-	context.subscriptions.push(commands.registerCommand('extension.getInheritedAttributes', async () => {		
-		const editor: TextEditor = window.activeTextEditor;
-		if (!editor) {
-			window.showErrorMessage("No active editor.");
-			return;
-		}
-
-		const selectedText: string = getSelectedText(editor);
-		if (!selectedText) {
-			window.showErrorMessage('No text selected.');
-			return;
-		}
-
-		if (!(workspace && workspace.workspaceFolders)) {
-			window.showErrorMessage("No files in workspace.");
-			return;
-		}
-
-		const parsedFiles = getParsedFiles(workspace);
-
-		let attributes = {};
-		getInheritedAttributes(attributes, selectedText, parsedFiles);
-
-		if (Object.keys(attributes).length <= 0) {
-			window.showInformationMessage("No inherited attributes.");
-			return;
-		}
-
-		const attribute = await window.showQuickPick(Object.keys(attributes).map((a) => {
-			return {
-				label: a,
-				detail: attributes[a]
-			};
-		}));
-
-		if (attribute) {
-			const wordEndPosition: Position = getWordEndPosition(editor);
-
-			await editor.edit((editBuilder : TextEditorEdit) => {
-				editBuilder.insert(wordEndPosition, `.${attribute.label}`);
-			});
-
-			const endOfLinePosition: Position = editor.document.lineAt(wordEndPosition).range.end;
-			editor.selection = new Selection(endOfLinePosition, endOfLinePosition);
-		}
-	}));
+	context.subscriptions.push(languages.registerDefinitionProvider(CIMPL_MODE, new CimplDefinitionProvider()));
+	context.subscriptions.push(commands.registerCommand('extension.getInheritedAttributes', getInheritedAttributes));
 }
 
-const getInheritedAttributes = (attributes, name, files) => {
+class CimplDefinitionProvider implements DefinitionProvider {
+
+	public provideDefinition(document: TextDocument, position: Position, token: CancellationToken): Thenable<Location> {
+		return new Promise((resolve, reject) => {
+			try {
+				const location: Location = getDefinitionLocation(document, position);
+				resolve(location);
+			} catch(e) {
+				reject(e);
+			}
+		});
+	}
+}
+
+const getDefinitionLocation = (document, position) => {
+	const wordRange = document.getWordRangeAtPosition(position);
+	const word = wordRange ? document.getText(wordRange) : '';
+
+	if (!(workspace && workspace.workspaceFolders)) {
+		return;
+	}
+
+	const parsedFiles = getParsedFiles(workspace);
+
+	for (const fileName in parsedFiles) {
+		let lineNumber: number;
+		
+		const dataDefs = parsedFiles[fileName].dataDefs();
+		if (!dataDefs.dataDef() || (dataDefs.dataDef().length <= 0)) {
+			continue;
+		}
+
+		for (const dataDef of dataDefs.dataDef()) {
+			const def = dataDef.elementDef() || dataDef.entryDef();
+			const header = def.elementHeader ? def.elementHeader() : def.entryHeader();
+			const simpleName = header.simpleName();
+
+			if (simpleName && (simpleName.start.text === word)) {
+				lineNumber = simpleName.start.line;
+				return new Location(Uri.file(fileName), document.lineAt(lineNumber - 1).range);
+			}
+		};
+	}
+	return;
+}
+
+const getInheritedAttributes = async () => {		
+	const editor: TextEditor = window.activeTextEditor;
+	if (!editor) {
+		window.showErrorMessage("No active editor.");
+		return;
+	}
+
+	const selectedText: string = getSelectedText(editor);
+	if (!selectedText) {
+		window.showErrorMessage('No text selected.');
+		return;
+	}
+
+	if (!(workspace && workspace.workspaceFolders)) {
+		window.showErrorMessage("No files in workspace.");
+		return;
+	}
+
+	const parsedFiles = getParsedFiles(workspace);
+
+	let attributes = {};
+	findInheritedAttributes(attributes, selectedText, parsedFiles);
+
+	if (Object.keys(attributes).length <= 0) {
+		window.showInformationMessage("No inherited attributes.");
+		return;
+	}
+
+	const attribute = await window.showQuickPick(Object.keys(attributes).map((a) => {
+		return {
+			label: a,
+			detail: attributes[a]
+		};
+	}));
+
+	if (attribute) {
+		const wordEndPosition: Position = getWordEndPosition(editor);
+
+		await editor.edit((editBuilder : TextEditorEdit) => {
+			editBuilder.insert(wordEndPosition, `.${attribute.label}`);
+		});
+
+		const endOfLinePosition: Position = editor.document.lineAt(wordEndPosition).range.end;
+		editor.selection = new Selection(endOfLinePosition, endOfLinePosition);
+	}
+}
+
+const findInheritedAttributes = (attributes, name, files) => {
 	for (const fileName in files) {			
 		const dataDefs = files[fileName].dataDefs();
 		if (!dataDefs.dataDef() || (dataDefs.dataDef().length <= 0)) {
@@ -192,7 +196,7 @@ const getInheritedAttributes = (attributes, name, files) => {
 				}
 				
 				if (parentName) {
-					getInheritedAttributes(attributes, parentName, files);
+					findInheritedAttributes(attributes, parentName, files);
 				}
 
 				break;

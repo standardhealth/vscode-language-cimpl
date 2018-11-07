@@ -5,20 +5,19 @@
 'use strict';
 
 import {
-	commands,
 	languages,
-	window,
 	workspace,
-	CancellationToken,
+	CompletionItem,
+	CompletionItemProvider,
+	CompletionList,
 	DefinitionProvider,
 	DocumentFilter,
 	ExtensionContext,
 	Location,
 	Position,
-	Selection,
+	Range,
 	TextDocument,
-	TextEditor,
-	TextEditorEdit,
+	TextLine,
 	Uri
 } from 'vscode';
 
@@ -29,12 +28,14 @@ const CIMPL_MODE: DocumentFilter = { language: 'cimpl', scheme: 'file' };
 export function activate(context: ExtensionContext) {
 
 	context.subscriptions.push(languages.registerDefinitionProvider(CIMPL_MODE, new CimplDefinitionProvider()));
-	context.subscriptions.push(commands.registerCommand('extension.getInheritedAttributes', getInheritedAttributes));
+	context.subscriptions.push(languages.registerCompletionItemProvider(CIMPL_MODE, new CimplCompletionItemProvider()));
+
 }
 
 class CimplDefinitionProvider implements DefinitionProvider {
 
-	public provideDefinition(document: TextDocument, position: Position, token: CancellationToken): Thenable<Location> {
+	public provideDefinition(document: TextDocument, position: Position): Thenable<Location> {
+
 		return new Promise((resolve, reject) => {
 			try {
 				const location: Location = getDefinitionLocation(document, position);
@@ -43,16 +44,36 @@ class CimplDefinitionProvider implements DefinitionProvider {
 				reject(e);
 			}
 		});
+
 	}
+
+}
+
+class CimplCompletionItemProvider implements CompletionItemProvider {
+
+	public provideCompletionItems(document: TextDocument, position: Position): Thenable<CompletionList> {
+
+		return new Promise((resolve, reject) => {
+			try {
+				const completionList: CompletionList = getCompletionList(document, position);
+				resolve(completionList);
+			} catch(e) {
+				reject(e);
+			}
+		});
+
+	}
+
 }
 
 const getDefinitionLocation = (document, position) => {
-	const wordRange = document.getWordRangeAtPosition(position);
-	const word = wordRange ? document.getText(wordRange) : '';
 
 	if (!(workspace && workspace.workspaceFolders)) {
 		return;
 	}
+
+	const wordRange: Range = document.getWordRangeAtPosition(position);
+	const word: string = wordRange ? document.getText(wordRange) : '';
 
 	const parsedFiles = getParsedFiles(workspace);
 
@@ -75,57 +96,36 @@ const getDefinitionLocation = (document, position) => {
 			}
 		};
 	}
+
 	return;
+
 }
 
-const getInheritedAttributes = async () => {		
-	const editor: TextEditor = window.activeTextEditor;
-	if (!editor) {
-		window.showErrorMessage("No active editor.");
-		return;
-	}
-
-	const selectedText: string = getSelectedText(editor);
-	if (!selectedText) {
-		window.showErrorMessage('No text selected.');
-		return;
-	}
+const getCompletionList = (document, position) => {
 
 	if (!(workspace && workspace.workspaceFolders)) {
-		window.showErrorMessage("No files in workspace.");
 		return;
 	}
+
+	const currentWordRange: Range = document.getWordRangeAtPosition(position);
+	const previousWordRange: Range = document.getWordRangeAtPosition(currentWordRange.start.translate(0, -2));
+	const word: string = document.getText(previousWordRange);
 
 	const parsedFiles = getParsedFiles(workspace);
 
 	let attributes = {};
-	findInheritedAttributes(attributes, selectedText, parsedFiles);
+	findInheritedAttributes(attributes, word, parsedFiles);
 
-	if (Object.keys(attributes).length <= 0) {
-		window.showInformationMessage("No inherited attributes.");
-		return;
-	}
+	const completionItems: CompletionItem[] = Object.keys(attributes).map((a) => {
+		return new CompletionItem(a);
+	});
 
-	const attribute = await window.showQuickPick(Object.keys(attributes).map((a) => {
-		return {
-			label: a,
-			detail: attributes[a]
-		};
-	}));
+	return new CompletionList(completionItems, false);
 
-	if (attribute) {
-		const wordEndPosition: Position = getWordEndPosition(editor);
-
-		await editor.edit((editBuilder : TextEditorEdit) => {
-			editBuilder.insert(wordEndPosition, `.${attribute.label}`);
-		});
-
-		const endOfLinePosition: Position = editor.document.lineAt(wordEndPosition).range.end;
-		editor.selection = new Selection(endOfLinePosition, endOfLinePosition);
-	}
 }
 
 const findInheritedAttributes = (attributes, name, files) => {
+
 	for (const fileName in files) {			
 		const dataDefs = files[fileName].dataDefs();
 		if (!dataDefs.dataDef() || (dataDefs.dataDef().length <= 0)) {
@@ -203,25 +203,11 @@ const findInheritedAttributes = (attributes, name, files) => {
 			}
 		};
 	}
-}
 
-const getSelectedText = (editor) => {
-	if (!editor.selection.isEmpty) {
-		return editor.document.getText(editor.selection).trim();
-	}
-
-	return editor.document.getText(editor.document.getWordRangeAtPosition(editor.selection.active)).trim();
-}
-
-const getWordEndPosition = (editor) => {
-	if (!editor.selection.isEmpty) {
-		return editor.selection.end;
-	}
-
-	return editor.document.getWordRangeAtPosition(editor.selection.active).end;
 }
 
 const getParsedFiles = (workspace) => {
+
 	let parsedFiles = {};
 
 	workspace.workspaceFolders.forEach((folder) => {
@@ -231,4 +217,5 @@ const getParsedFiles = (workspace) => {
 	});
 
 	return parsedFiles;
+
 }

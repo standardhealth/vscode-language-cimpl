@@ -1,19 +1,35 @@
-# LSP Multi Root Example
+# CIMPL Language Support for VS Code
 
-A language server example that demonstrates how to handle configuration settings in a workspace that uses multi root folders. Since settings in VS Code in this setup are typically scoped to a resource, the example reads the resource settings from the client using the new proposed API getConfiguration. This is analogous to reading settings in a multi-root folder setup directly in the extension host.
+A language support extension for the CIMPL language. More details about CIMPL at this
+tutorial. https://github.com/standardhealth/shr-cli/wiki/Tutorial
 
-The example uses proposed Language Server protocol. So the code demoed here might change when the final version of the configuration and workspace folder protocol is released.
+## Language Features
+
+### Syntax Highlighting
+
+This extension provides syntax highlighting for CIMPL. When editing a CIMPL file,
+the syntax should be automatically highlighted.
+
+### Go to Definition and Peek
+
+This extension provides support for Go to Definition and Peek in CIMPL, as described
+in the VS Code documentation at the link below.
+https://code.visualstudio.com/docs/editor/editingevolved#_go-to-definition
+https://code.visualstudio.com/docs/editor/editingevolved#_peek
+
+### Get Inherited Attributes
+
+This extension provides a "Get Inherited Attributes" command at
+`extension.getInheritedAttributes` in the command palette. Activating this command while
+selecting the name of a data element will list its inherited attributes and their
+cardinalites. Selecting an attribute from this list will insert it into the current editor.
 
 ## Compile and Run
 
-- run `npm install` in this folder. This installs all necessary npm modules in both the client and server folder
+- run `npm install` in this folder. This installs all necessary npm modules in both the
+client and server folder
 - open VS Code on this folder.
-- Press Ctrl+Shift+B to compile the client and server
+- Press Ctrl+Shift+B to compile the extension
 - Switch to the Debug viewlet
-- Select `Launch Client` from the drop down
-- Run the lauch config
-- If you want to debug the server as well use the launch configuration `Attach to Server`
-
-- In the [Extension Development Host] instance of VSCode, open a document in 'plain text' language mode.
-  Enter text content such as `AAA aaa BBB`. The extension will emit diagnostics for all words in all-uppercase.
+- Select `Launch Extension` from the drop down
 

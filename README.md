@@ -1,7 +1,8 @@
 # CIMPL Language Support for VS Code
 
 A language support extension for the CIMPL language. More details about CIMPL at this
-tutorial. https://github.com/standardhealth/shr-cli/wiki/Tutorial
+tutorial.
+https://github.com/standardhealth/shr-cli/wiki/Tutorial
 
 ## Language Features
 
@@ -13,7 +14,7 @@ the syntax should be automatically highlighted.
 ### Go to Definition and Peek
 
 This extension provides support for Go to Definition and Peek in CIMPL, as described
-in the VS Code documentation at the link below.
+in the VS Code documentation at the links below.
 https://code.visualstudio.com/docs/editor/editingevolved#_go-to-definition
 https://code.visualstudio.com/docs/editor/editingevolved#_peek
 

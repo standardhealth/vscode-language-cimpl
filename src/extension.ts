@@ -17,7 +17,6 @@ import {
 	Position,
 	Range,
 	TextDocument,
-	TextLine,
 	Uri
 } from 'vscode';
 
@@ -28,7 +27,7 @@ const CIMPL_MODE: DocumentFilter = { language: 'cimpl', scheme: 'file' };
 export function activate(context: ExtensionContext) {
 
 	context.subscriptions.push(languages.registerDefinitionProvider(CIMPL_MODE, new CimplDefinitionProvider()));
-	context.subscriptions.push(languages.registerCompletionItemProvider(CIMPL_MODE, new CimplCompletionItemProvider()));
+	context.subscriptions.push(languages.registerCompletionItemProvider(CIMPL_MODE, new CimplCompletionItemProvider(), "."));
 
 }
 
@@ -108,7 +107,12 @@ const getCompletionList = (document, position) => {
 	}
 
 	const currentWordRange: Range = document.getWordRangeAtPosition(position);
-	const previousWordRange: Range = document.getWordRangeAtPosition(currentWordRange.start.translate(0, -2));
+	let previousWordRange: Range;
+	if (currentWordRange) {
+		previousWordRange = document.getWordRangeAtPosition(currentWordRange.start.translate(0, -2));
+	} else {
+		previousWordRange = document.getWordRangeAtPosition(position.translate(0, -1));
+	}
 	const word: string = document.getText(previousWordRange);
 
 	const parsedFiles = getParsedFiles(workspace);

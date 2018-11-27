@@ -13,6 +13,8 @@ import {
 	DefinitionProvider,
 	DocumentFilter,
 	ExtensionContext,
+	Hover,
+	HoverProvider,
 	Location,
 	Position,
 	Range,
@@ -28,6 +30,7 @@ export function activate(context: ExtensionContext) {
 
 	context.subscriptions.push(languages.registerDefinitionProvider(CIMPL_MODE, new CimplDefinitionProvider()));
 	context.subscriptions.push(languages.registerCompletionItemProvider(CIMPL_MODE, new CimplCompletionItemProvider(), "."));
+	context.subscriptions.push(languages.registerHoverProvider(CIMPL_MODE, new CimplHoverProvider()));
 
 }
 
@@ -63,6 +66,20 @@ class CimplCompletionItemProvider implements CompletionItemProvider {
 
 	}
 
+}
+
+class CimplHoverProvider implements HoverProvider {
+
+	public provideHover(document: TextDocument, position: Position): Thenable<Hover> {
+		return new Promise((resolve, reject) => {
+			try {
+				const hover: Hover = getHover(document, position);
+				resolve(hover);
+			} catch(e) {
+				reject(e);
+			}
+		});
+	}
 }
 
 const getDefinitionLocation = (document, position) => {
@@ -125,6 +142,28 @@ const getCompletionList = (document, position) => {
 	});
 
 	return new CompletionList(completionItems, false);
+
+}
+
+const getHover = (document, position) => {
+
+	if (!(workspace && workspace.workspaceFolders)) {
+		return;
+	}
+
+	const currentWordRange: Range = document.getWordRangeAtPosition(position);
+	const word: string = document.getText(currentWordRange);
+
+	const parsedFiles = getParsedFiles(workspace);
+
+	let attributes = {};
+	findInheritedAttributes(attributes, word, parsedFiles);
+
+	const hoverText: string[] = Object.keys(attributes).map((a) => {
+		return `${attributes[a]} ${a}`;
+	});
+
+	return new Hover(hoverText);
 
 }
 

@@ -4,6 +4,12 @@ A language support extension for the CIMPL language. More details about CIMPL at
 tutorial.
 https://github.com/standardhealth/shr-cli/wiki/Tutorial
 
+## How to Download
+
+In Visual Studio Code, go to the VS Code Extension Marketplace and download the
+`vscode-language-cimpl` extension. Once activated, this extension's features should
+be automatically implemented.
+
 ## Language Features
 
 ### Syntax Highlighting
@@ -18,14 +24,16 @@ in the VS Code documentation at the links below.
 https://code.visualstudio.com/docs/editor/editingevolved#_go-to-definition
 https://code.visualstudio.com/docs/editor/editingevolved#_peek
 
-### Get Inherited Attributes
+### Code Completion Suggestions
 
-This extension provides a "Get Inherited Attributes" command at
-`extension.getInheritedAttributes` in the command palette. Activating this command while
-selecting the name of a data element will list its inherited attributes and their
-cardinalites. Selecting an attribute from this list will insert it into the current editor.
+When editing CIMPL, the extension will provide suggestions for inherited attributes of elements while typing, automatically.
 
-## Compile and Run
+### Hover Provider
+
+When hovering over a CIMPL element, a hover provider will display all inherited attributes
+of that element, and their constraints.
+
+## Compile and Run (for Developers)
 
 - run `npm install` in this folder. This installs all necessary npm modules in both the
 client and server folder

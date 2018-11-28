@@ -5,20 +5,20 @@
 'use strict';
 
 import {
-	commands,
 	languages,
-	window,
 	workspace,
-	CancellationToken,
+	CompletionItem,
+	CompletionItemProvider,
+	CompletionList,
 	DefinitionProvider,
 	DocumentFilter,
 	ExtensionContext,
+	Hover,
+	HoverProvider,
 	Location,
 	Position,
-	Selection,
+	Range,
 	TextDocument,
-	TextEditor,
-	TextEditorEdit,
 	Uri
 } from 'vscode';
 
@@ -29,12 +29,15 @@ const CIMPL_MODE: DocumentFilter = { language: 'cimpl', scheme: 'file' };
 export function activate(context: ExtensionContext) {
 
 	context.subscriptions.push(languages.registerDefinitionProvider(CIMPL_MODE, new CimplDefinitionProvider()));
-	context.subscriptions.push(commands.registerCommand('extension.getInheritedAttributes', getInheritedAttributes));
+	context.subscriptions.push(languages.registerCompletionItemProvider(CIMPL_MODE, new CimplCompletionItemProvider(), "."));
+	context.subscriptions.push(languages.registerHoverProvider(CIMPL_MODE, new CimplHoverProvider()));
+
 }
 
 class CimplDefinitionProvider implements DefinitionProvider {
 
-	public provideDefinition(document: TextDocument, position: Position, token: CancellationToken): Thenable<Location> {
+	public provideDefinition(document: TextDocument, position: Position): Thenable<Location> {
+
 		return new Promise((resolve, reject) => {
 			try {
 				const location: Location = getDefinitionLocation(document, position);
@@ -43,16 +46,50 @@ class CimplDefinitionProvider implements DefinitionProvider {
 				reject(e);
 			}
 		});
+
+	}
+
+}
+
+class CimplCompletionItemProvider implements CompletionItemProvider {
+
+	public provideCompletionItems(document: TextDocument, position: Position): Thenable<CompletionList> {
+
+		return new Promise((resolve, reject) => {
+			try {
+				const completionList: CompletionList = getCompletionList(document, position);
+				resolve(completionList);
+			} catch(e) {
+				reject(e);
+			}
+		});
+
+	}
+
+}
+
+class CimplHoverProvider implements HoverProvider {
+
+	public provideHover(document: TextDocument, position: Position): Thenable<Hover> {
+		return new Promise((resolve, reject) => {
+			try {
+				const hover: Hover = getHover(document, position);
+				resolve(hover);
+			} catch(e) {
+				reject(e);
+			}
+		});
 	}
 }
 
 const getDefinitionLocation = (document, position) => {
-	const wordRange = document.getWordRangeAtPosition(position);
-	const word = wordRange ? document.getText(wordRange) : '';
 
 	if (!(workspace && workspace.workspaceFolders)) {
 		return;
 	}
+
+	const wordRange: Range = document.getWordRangeAtPosition(position);
+	const word: string = wordRange ? document.getText(wordRange) : '';
 
 	const parsedFiles = getParsedFiles(workspace);
 
@@ -75,57 +112,63 @@ const getDefinitionLocation = (document, position) => {
 			}
 		};
 	}
+
 	return;
+
 }
 
-const getInheritedAttributes = async () => {		
-	const editor: TextEditor = window.activeTextEditor;
-	if (!editor) {
-		window.showErrorMessage("No active editor.");
-		return;
-	}
-
-	const selectedText: string = getSelectedText(editor);
-	if (!selectedText) {
-		window.showErrorMessage('No text selected.');
-		return;
-	}
+const getCompletionList = (document, position) => {
 
 	if (!(workspace && workspace.workspaceFolders)) {
-		window.showErrorMessage("No files in workspace.");
 		return;
 	}
+
+	const currentWordRange: Range = document.getWordRangeAtPosition(position);
+	let previousWordRange: Range;
+	if (currentWordRange) {
+		previousWordRange = document.getWordRangeAtPosition(currentWordRange.start.translate(0, -2));
+	} else {
+		previousWordRange = document.getWordRangeAtPosition(position.translate(0, -1));
+	}
+	const word: string = document.getText(previousWordRange);
 
 	const parsedFiles = getParsedFiles(workspace);
 
 	let attributes = {};
-	findInheritedAttributes(attributes, selectedText, parsedFiles);
+	findInheritedAttributes(attributes, word, parsedFiles);
 
-	if (Object.keys(attributes).length <= 0) {
-		window.showInformationMessage("No inherited attributes.");
+	const completionItems: CompletionItem[] = Object.keys(attributes).map((a) => {
+		return new CompletionItem(a);
+	});
+
+	return new CompletionList(completionItems, false);
+
+}
+
+const getHover = (document, position) => {
+
+	if (!(workspace && workspace.workspaceFolders)) {
 		return;
 	}
 
-	const attribute = await window.showQuickPick(Object.keys(attributes).map((a) => {
-		return {
-			label: a,
-			detail: attributes[a]
-		};
-	}));
+	const currentWordRange: Range = document.getWordRangeAtPosition(position);
+	const word: string = document.getText(currentWordRange);
 
-	if (attribute) {
-		const wordEndPosition: Position = getWordEndPosition(editor);
+	const parsedFiles = getParsedFiles(workspace);
 
-		await editor.edit((editBuilder : TextEditorEdit) => {
-			editBuilder.insert(wordEndPosition, `.${attribute.label}`);
-		});
+	let attributes = {};
+	findInheritedAttributes(attributes, word, parsedFiles);
 
-		const endOfLinePosition: Position = editor.document.lineAt(wordEndPosition).range.end;
-		editor.selection = new Selection(endOfLinePosition, endOfLinePosition);
-	}
+	const hoverText: string[] = Object.keys(attributes).map((a) => {
+		return `${attributes[a]} ${a}`;
+	});
+
+	return new Hover(hoverText);
+
 }
 
 const findInheritedAttributes = (attributes, name, files) => {
+
 	for (const fileName in files) {			
 		const dataDefs = files[fileName].dataDefs();
 		if (!dataDefs.dataDef() || (dataDefs.dataDef().length <= 0)) {
@@ -203,25 +246,11 @@ const findInheritedAttributes = (attributes, name, files) => {
 			}
 		};
 	}
-}
 
-const getSelectedText = (editor) => {
-	if (!editor.selection.isEmpty) {
-		return editor.document.getText(editor.selection).trim();
-	}
-
-	return editor.document.getText(editor.document.getWordRangeAtPosition(editor.selection.active)).trim();
-}
-
-const getWordEndPosition = (editor) => {
-	if (!editor.selection.isEmpty) {
-		return editor.selection.end;
-	}
-
-	return editor.document.getWordRangeAtPosition(editor.selection.active).end;
 }
 
 const getParsedFiles = (workspace) => {
+
 	let parsedFiles = {};
 
 	workspace.workspaceFolders.forEach((folder) => {
@@ -231,4 +260,5 @@ const getParsedFiles = (workspace) => {
 	});
 
 	return parsedFiles;
+
 }

@@ -108,7 +108,7 @@ const getDefinitionLocation = (document, position) => {
 
 			if (simpleName && (simpleName.start.text === word)) {
 				lineNumber = simpleName.start.line;
-				return new Location(Uri.file(fileName), document.lineAt(lineNumber - 1).range);
+				return new Location(Uri.file(fileName), new Position(lineNumber - 1, 0));
 			}
 		};
 	}

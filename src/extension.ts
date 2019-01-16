@@ -102,8 +102,15 @@ const getDefinitionLocation = (document, position) => {
 		}
 
 		for (const dataDef of dataDefs.dataDef()) {
-			const def = dataDef.elementDef() || dataDef.entryDef();
-			const header = def.elementHeader ? def.elementHeader() : def.entryHeader();
+			const def = dataDef.elementDef() || dataDef.entryDef() || dataDef.abstractDef();
+			let header;
+			if (def.elementHeader) {
+				header = def.elementHeader();
+			} else if (def.entryHeader) {
+				header = def.entryHeader();
+			} else {
+				header = def.abstractHeader();
+			};
 			const simpleName = header.simpleName();
 
 			if (simpleName && (simpleName.start.text === word)) {
@@ -169,15 +176,22 @@ const getHover = (document, position) => {
 
 const findInheritedAttributes = (attributes, name, files) => {
 
-	for (const fileName in files) {			
+	for (const fileName in files) {
 		const dataDefs = files[fileName].dataDefs();
 		if (!dataDefs.dataDef() || (dataDefs.dataDef().length <= 0)) {
 			continue;
 		}
 
 		for (const dataDef of dataDefs.dataDef()) {
-			const def = dataDef.elementDef() || dataDef.entryDef();
-			const header = def.elementHeader ? def.elementHeader() : def.entryHeader();
+			const def = dataDef.elementDef() || dataDef.entryDef() || dataDef.abstractDef();
+			let header;
+			if (def.elementHeader) {
+				header = def.elementHeader();
+			} else if (def.entryHeader) {
+				header = def.entryHeader();
+			} else {
+				header = def.abstractHeader();
+			};
 			const simpleName = header.simpleName();
 
 			if (simpleName && (simpleName.start.text === name)) {
@@ -185,25 +199,16 @@ const findInheritedAttributes = (attributes, name, files) => {
 				const fields = values.field();
 
 				for (const field of fields) {
-					const fieldType = field.fieldType()[0];
-					
+					let propertyField;
+					if (field.propertyField) {
+						propertyField = field.propertyField();
+					}
+
 					let simpleOrFQName;
-					if (fieldType.simpleOrFQName) {
-						simpleOrFQName = fieldType.simpleOrFQName();
-					}
-
-					if (!simpleOrFQName) {
-						let ref;
-						if (fieldType.ref) {
-							ref = fieldType.ref();
-						}
-						if (ref && ref.simpleOrFQName) {
-							simpleOrFQName = ref.simpleOrFQName();
-						}
-					}
-
-					if (!simpleOrFQName) {
-						const withConstraint = fieldType.elementWithConstraint() || fieldType.entryWithConstraint();
+					let count;
+					let withConstraint;
+					if (!propertyField && (field.elementWithConstraint || field.entryWithConstraint)) {
+						withConstraint = field.elementWithConstraint() || field.entryWithConstraint();
 						if (withConstraint && withConstraint.simpleOrFQName) {
 							simpleOrFQName = withConstraint.simpleOrFQName();
 						}
@@ -211,12 +216,51 @@ const findInheritedAttributes = (attributes, name, files) => {
 						if (withConstraint && !simpleOrFQName) {
 							simpleOrFQName = withConstraint.elementPath();
 						}
+
+						if (withConstraint && withConstraint.count) {
+							count = withConstraint.count();
+						}
+					}
+
+					let propertyFieldType;
+					if ((!simpleOrFQName) && propertyField) {
+						propertyFieldType = propertyField.propertyFieldType();
+					}
+
+					if ((!count) && propertyField) {
+						count = propertyField.count();
+					}
+
+					if (propertyFieldType) {
+						if (propertyFieldType.simpleOrFQName) {
+							simpleOrFQName = propertyFieldType.simpleOrFQName();
+						}
+	
+						if (!simpleOrFQName) {
+							let ref;
+							if (propertyFieldType.ref) {
+								ref = propertyFieldType.ref();
+							}
+							if (ref && ref.simpleOrFQName) {
+								simpleOrFQName = ref.simpleOrFQName();
+							}
+						}
+	
+						if (!simpleOrFQName) {
+							withConstraint = propertyFieldType.elementWithConstraint() || propertyFieldType.entryWithConstraint();
+							if (withConstraint && withConstraint.simpleOrFQName) {
+								simpleOrFQName = withConstraint.simpleOrFQName();
+							}
+	
+							if (withConstraint && !simpleOrFQName) {
+								simpleOrFQName = withConstraint.elementPath();
+							}
+						}
 					}
 
 					const attributeName = Array.isArray(simpleOrFQName.simpleName())
 					? simpleOrFQName.simpleName()[simpleOrFQName.simpleName().length - 1]
 					: simpleOrFQName.simpleName();
-					const count = field.count();
 											
 					if (attributeName && attributeName.start.text && count && count.start.text && count.stop.text) {
 						if (!attributes[attributeName.start.text]) {
@@ -231,9 +275,9 @@ const findInheritedAttributes = (attributes, name, files) => {
 				let parentName: string;
 
 				for (const prop of propsList) {
-					const basedOn = prop.basedOnProp();
-					if (basedOn) {
-						parentName = basedOn.simpleOrFQName().simpleName().start.text;
+					const parent = prop.parentProp();
+					if (parent) {
+						parentName = parent.simpleOrFQName().simpleName().start.text;
 						break;
 					}
 				}

@@ -217,6 +217,10 @@ const findInheritedAttributes = (attributes, name, files) => {
 							simpleOrFQName = withConstraint.elementPath();
 						}
 
+						if (withConstraint && !simpleOrFQName) {
+							simpleOrFQName = withConstraint.elementBracketPath();
+						}
+
 						if (withConstraint && withConstraint.count) {
 							count = withConstraint.count();
 						}
@@ -254,6 +258,10 @@ const findInheritedAttributes = (attributes, name, files) => {
 	
 							if (withConstraint && !simpleOrFQName) {
 								simpleOrFQName = withConstraint.elementPath();
+							}
+
+							if (withConstraint && !simpleOrFQName) {
+								simpleOrFQName = withConstraint.elementBracketPath();
 							}
 						}
 					}

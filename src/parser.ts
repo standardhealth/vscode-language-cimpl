@@ -1,19 +1,25 @@
 import fs = require('fs');
 import path = require('path');
 import { FileStream, CommonTokenStream } from 'antlr4/index';
-const { SHRDataElementParser } = require('./parsers/cimpl6/SHRDataElementParser.js');
-const { SHRDataElementLexer } = require('./parsers/cimpl6/SHRDataElementLexer.js');
+const ParserCimpl5 = require('./parsers/cimpl5/SHRDataElementParser.js');
+const LexerCimpl5 = require('./parsers/cimpl5/SHRDataElementLexer.js');
+const ParserCimpl6 = require('./parsers/cimpl6/SHRDataElementParser.js');
+const LexerCimpl6 = require('./parsers/cimpl6/SHRDataElementLexer.js');
 
-export function importFromFilePath(filePath: string) {
-  const filesByType = processPath(filePath);
+export function importFromFilePath(filePath: string, version: string) {
+  const filesByType = processPath(filePath, version);
   let tree: any = {};
 
   for (const file of filesByType.dataElement) {
     const chars = new FileStream(file);
-    const lexer = new SHRDataElementLexer(chars);
+    const lexer = (version === '5.0')
+    ? new LexerCimpl5.SHRDataElementLexer(chars)
+    : new LexerCimpl6.SHRDataElementLexer(chars);
     lexer.removeErrorListeners(); // Only log errors during the import
     const tokens = new CommonTokenStream(lexer);
-    const parser = new SHRDataElementParser(tokens);
+    const parser = (version === '5.0')
+    ? new ParserCimpl5.SHRDataElementParser(tokens)
+    : new ParserCimpl6.SHRDataElementParser(tokens);
     parser.removeErrorListeners(); // Only log errors during the import
     parser.buildParseTrees = true;
     tree[file] = parser.doc();
@@ -22,15 +28,15 @@ export function importFromFilePath(filePath: string) {
   return tree;
 }
 
-function processPath(filePath: string, filesByType = new FilesByType()) {
+function processPath(filePath: string, version: string, filesByType = new FilesByType()) {
   const stats = fs.statSync(filePath);
   if (stats.isDirectory()) {
     const files = fs.readdirSync(filePath);
     for (const file of files) {
-      processPath(path.join(filePath, file), filesByType);
+      processPath(path.join(filePath, file), version, filesByType);
     }
   } else {
-    filesByType.add(filePath);
+    filesByType.add(filePath, version);
   }
 
   return filesByType;
@@ -57,8 +63,8 @@ class FilesByType {
   get valueSet() { return this._valueSet; }
   get config() { return this._config; }
 
-  add(file: string) {
-    switch (this.detectType(file)) {
+  add(file: string, version: string) {
+    switch (this.detectType(file, version)) {
       case 'DataElement':
         this._dataElement.push(file);
         break;
@@ -77,16 +83,20 @@ class FilesByType {
     }
   }
 
-  detectType(file: string) {
+  detectType(file: string, version: string) {
     if (!file.endsWith('.txt') && !file.endsWith('.shr')) {
-      return null;  // only support *.txt or *.shr or .json coniguration files
+      return null;  // only support *.txt or *.shr or .json configuration files
     }
-    const re = /^\s*Grammar:\s+([^\s]+)/;
+    const re = /^\s*Grammar:\s+([^\s]+)\s+([^\s]+)/;
     const lines = fs.readFileSync(file, 'utf-8').split('\n');
     for (const l of lines) {
       const match = l.match(re);
-      if (match != null && match.length >= 2) {
-        return match[1];
+      if (match != null && match.length >= 3) {
+        if (match[2] === version) {
+          return match[1];
+        } else {
+          return null;
+        }
       } else if (file.endsWith('config.txt') || file.endsWith('config.json')) {
         return 'Config';
       }

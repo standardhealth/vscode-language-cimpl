@@ -3,15 +3,12 @@
 	"description": "VSCode CIMPL Language Support",
 	"author": "The MITRE Corporation",
 	"license": "Apache-2.0",
-	"version": "2.1.2",
+	"version": "2.2.0",
 	"publisher": "kmahalingam",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/standardhealth/vscode-language-cimpl"
 	},
-	"keywords": [
-		"multi-root ready"
-	],
 	"engines": {
 		"vscode": "^1.23.0"
 	},
@@ -42,6 +39,12 @@
 				"language": "cimpl",
 				"scopeName": "source.cimpl",
 				"path": "./syntaxes/cimpl.tmLanguage.json"
+			}
+		],
+		"snippets": [
+			{
+				"language": "cimpl",
+				"path": "./snippets.json"
 			}
 		]
 	},

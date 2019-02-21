@@ -1,0 +1,38 @@
+{
+	"Element Definition": {
+		"prefix": "element",
+		"body": [
+			"Element:\t\t\t",
+            "Parent:\t\t\t\t",
+            "Concept:\t\t\t",
+            "Description:\t\t",
+            "Value:\t\t\t\t",
+            "Property:\t\t\t"
+		],
+		"description": "Element Definition"
+	},
+	"Entry Definition": {
+		"prefix": "entry",
+		"body": [
+			"Entry:\t\t\t\t",
+            "Parent:\t\t\t\t",
+            "Concept:\t\t\t",
+            "Description:\t\t",
+            "Value:\t\t\t\t",
+            "Property:\t\t\t"
+		],
+		"description": "Entry Definition"
+	},
+	"Abstract Definition": {
+		"prefix": "abstract",
+		"body": [
+			"Abstract:\t\t\t",
+            "Parent:\t\t\t\t",
+            "Concept:\t\t\t",
+            "Description:\t\t",
+            "Value:\t\t\t\t",
+            "Property:\t\t\t"
+		],
+		"description": "Abstract Definition"
+	}
+}

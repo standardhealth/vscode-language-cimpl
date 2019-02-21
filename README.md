@@ -33,6 +33,10 @@ When editing CIMPL, the extension will provide suggestions for inherited attribu
 When hovering over a CIMPL element, a hover provider will display all inherited attributes
 of that element, and their constraints.
 
+### Snippet Support
+
+When entering the string `element`, `entry`, or `abstract` in a CIMPL file, hitting the tab key will automatically insert the corresponding element definition into the editor as a snippet.
+
 ## Compile and Run (for Developers)
 
 - run `npm install` in this folder. This installs all necessary npm modules in both the

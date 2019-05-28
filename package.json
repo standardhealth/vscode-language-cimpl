@@ -57,10 +57,10 @@
 	"devDependencies": {
 		"@types/mocha": "^5.2.0",
 		"@types/node": "^8.0.0",
-		"typescript": "2.8.3"
+		"typescript": "2.8.3",
+		"vscode": "^1.1.18"
 	},
 	"dependencies": {
-		"vscode": "^1.1.18",
 		"antlr4": "~4.6.0",
 		"extend": ">=3.0.2",
 		"node.extend": ">=1.1.7",

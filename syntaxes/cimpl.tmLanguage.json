@@ -30,7 +30,7 @@
         },
         {
           "name": "keyword.reserved.cimpl",
-          "match": "\\b(Grammar|Map|Namespace|TBD)\\b"
+          "match": "\\b(Grammar|Map|Namespace|Abstract|TBD)\\b"
         },
         {
           "name": "support.function.cimpl",

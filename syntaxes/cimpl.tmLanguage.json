@@ -26,11 +26,11 @@
       "patterns": [
         {
           "name": "keyword.control.cimpl",
-          "match": "\\b(Grammar|DataElement|Namespace|Uses|Path|CodeSystem|Element|EntryElement|Based on|Value|Concept|Description|ValueSet|Target|Entry|Parent|Property)\\b:"
+          "match": "\\b(Grammar|DataElement|Namespace|Uses|Path|CodeSystem|Element|EntryElement|Based on|Value|Concept|Description|ValueSet|Target|Entry|Parent|Property|Abstract|Group)\\b:"
         },
         {
           "name": "keyword.reserved.cimpl",
-          "match": "\\b(Grammar|Map|Namespace|TBD|Abstract)\\b"
+          "match": "\\b(Grammar|Map|Namespace|TBD)\\b"
         },
         {
           "name": "support.function.cimpl",

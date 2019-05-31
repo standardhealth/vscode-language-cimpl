@@ -3,7 +3,7 @@
 	"description": "VSCode CIMPL Language Support",
 	"author": "The MITRE Corporation",
 	"license": "Apache-2.0",
-	"version": "2.2.4",
+	"version": "2.2.5",
 	"publisher": "kmahalingam",
 	"repository": {
 		"type": "git",
@@ -64,6 +64,7 @@
 		"antlr4": "~4.6.0",
 		"extend": ">=3.0.2",
 		"node.extend": ">=1.1.7",
-		"tar": ">=4.4.2"
+		"tar": ">=4.4.2",
+		"fstream": ">=1.0.12"
 	}
 }

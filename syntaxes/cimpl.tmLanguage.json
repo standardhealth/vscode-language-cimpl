@@ -101,7 +101,7 @@
       "patterns": [
         {
           "name": "constant.language.primitives.cimpl",
-          "match": "\\b(boolean|integer|string|decimal|uri|base64Binary|instant|date|dateTime|time|code|oid|id|markdown|unsignedInt|positiveInt|xhtml|TBD|TBD#TBD|true|false)\\b"
+          "match": "\\b(boolean|integer|string|decimal|uri|base64Binary|instant|date|dateTime|time|code|oid|id|markdown|unsignedInt|positiveInt|xhtml|TBD|TBD#TBD|true|false|concept)\\b"
         },
         {
           "name": "variable.language.underscore.cimpl",

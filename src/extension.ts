@@ -148,12 +148,14 @@ const getDefinitionLocationCimpl6 = (document: TextDocument, position: Position)
 		}
 
 		for (const dataDef of dataDefs.dataDef()) {
-			const def = dataDef.elementDef() || dataDef.entryDef() || dataDef.abstractDef();
+			const def = dataDef.elementDef() || dataDef.entryDef() || dataDef.groupDef() || dataDef.abstractDef();
 			let header;
 			if (def.elementHeader) {
 				header = def.elementHeader();
 			} else if (def.entryHeader) {
 				header = def.entryHeader();
+			} else if (def.groupHeader) {
+				header = def.groupHeader();
 			} else {
 				header = def.abstractHeader();
 			};
@@ -245,20 +247,21 @@ const findInheritedAttributesCimpl6 = (attributes, name, files) => {
 		}
 
 		for (const dataDef of dataDefs.dataDef()) {
-			const def = dataDef.elementDef() || dataDef.entryDef() || dataDef.abstractDef();
+			const def = dataDef.elementDef() || dataDef.entryDef() || dataDef.groupDef() || dataDef.abstractDef();
 			let header;
 			if (def.elementHeader) {
 				header = def.elementHeader();
 			} else if (def.entryHeader) {
 				header = def.entryHeader();
+			} else if (def.groupHeader) {
+				header = def.groupHeader();
 			} else {
 				header = def.abstractHeader();
 			};
 			const simpleName = header.simpleName();
 
 			if (simpleName && (simpleName.start.text === name)) {
-				const values = def.values();
-				const fields = values.field();
+				const fields = def.values ? def.values().field() : def.field();
 
 				for (const field of fields) {
 					let propertyField;
@@ -269,18 +272,18 @@ const findInheritedAttributesCimpl6 = (attributes, name, files) => {
 					let simpleOrFQName;
 					let count;
 					let withConstraint;
-					if (!propertyField && (field.elementWithConstraint || field.entryWithConstraint)) {
-						withConstraint = field.elementWithConstraint() || field.entryWithConstraint();
+					if (!propertyField && field.elementWithConstraint) {
+						withConstraint = field.elementWithConstraint();
 						if (withConstraint && withConstraint.simpleOrFQName) {
 							simpleOrFQName = withConstraint.simpleOrFQName();
 						}
 
-						if (withConstraint && !simpleOrFQName) {
+						if (withConstraint && withConstraint.elementPath && !simpleOrFQName) {
 							simpleOrFQName = withConstraint.elementPath();
 						}
 
 						if (withConstraint && !simpleOrFQName) {
-							simpleOrFQName = withConstraint.elementBracketPath();
+							simpleOrFQName = withConstraint.elementBracketPath().elementBracketPathFirstPart().simpleOrFQName();
 						}
 
 						if (withConstraint && withConstraint.count) {
@@ -313,21 +316,24 @@ const findInheritedAttributesCimpl6 = (attributes, name, files) => {
 						}
 	
 						if (!simpleOrFQName) {
-							withConstraint = propertyFieldType.elementWithConstraint() || propertyFieldType.entryWithConstraint();
+							withConstraint = propertyFieldType.elementWithConstraint();
 							if (withConstraint && withConstraint.simpleOrFQName) {
 								simpleOrFQName = withConstraint.simpleOrFQName();
 							}
 	
-							if (withConstraint && !simpleOrFQName) {
+							if (withConstraint && withConstraint.elementPath && !simpleOrFQName) {
 								simpleOrFQName = withConstraint.elementPath();
 							}
 
 							if (withConstraint && !simpleOrFQName) {
-								simpleOrFQName = withConstraint.elementBracketPath();
+								simpleOrFQName = withConstraint.elementBracketPath().elementBracketPathFirstPart().simpleOrFQName();
 							}
 						}
 					}
 
+					if (!simpleOrFQName) {
+						console.log();
+					}
 					const attributeName = Array.isArray(simpleOrFQName.simpleName())
 					? simpleOrFQName.simpleName()[simpleOrFQName.simpleName().length - 1]
 					: simpleOrFQName.simpleName();
